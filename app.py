@@ -3,7 +3,7 @@ import sqlite3
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 
-DATABASE = "MaoriDatabase"
+DATABASE = "languagedatabase.db"
 app = Flask(__name__)
 
 bcrypt = Bcrypt(app)
@@ -118,7 +118,24 @@ def signup_page():
 
 
 # logout page function
+@app.route('/logout')
+def logout_page():
+    print(list(session.keys()))
+    [session.pop(key) for key in list(session.keys())]
+    print(list(session.keys()))
+    return redirect('/?message=You+have+successfully+logged+out')
 
+
+# page not found error page
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('error.html', logged_in=is_logged_in(), message=e), 404
+
+
+# internal server error page
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('error.html', logged_in=is_logged_in(), message=e), 500
 
 
 if __name__ == '__main__':
