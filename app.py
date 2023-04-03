@@ -3,7 +3,7 @@ import sqlite3
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 
-DATABASE = "smile.db"
+DATABASE = "MaoriDatabase"
 app = Flask(__name__)
 
 bcrypt = Bcrypt(app)
@@ -53,16 +53,48 @@ def home_page():
     return render_template("home.html", logged_in=is_logged_in())
 
 
+# login page
+@app.route('/login', methods=['POST', 'GET'])
+def login_page():
+    if is_logged_in():
+        return redirect("/")
+    print("Logging In")
+    if request.method == "POST":
+        email = request.form['email'].strip().lower()
+        password = request.form['password'].strip()
+
+        user_data = get_list("SELECT id, firstname, password FROM users WHERE email = ?", (email,))
+
+        try:
+            user_id = user_data[0]
+            first_name = user_id[1]
+            db_password = user_id[2]
+
+        except IndexError:
+            return redirect("/login?error=Email+invalid+or+password+incorrect")
+
+        if not bcrypt.check_password_hash(db_password, password):
+            return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
+
+        session['email'] = email
+        session['user_id'] = user_id
+        session['firstname'] = first_name
+        session['cart'] = []
+        print(session)
+        return redirect('/')
+    return render_template("login.html", logged_in=is_logged_in())
+
+
 # signup page
-@app.route('/signup')
+@app.route('/signup', methods=['POST', 'GET'])
 def signup_page():
     if is_logged_in():
-        return redirect("/menu/1")
+        return redirect("/")
     if request.method == 'POST':
         print(request.form)
 
-        firstname = request.form.get('fname').title().strip()
-        lastname = request.form.get('lname').title().strip()
+        firstname = request.form.get('firstname').title().strip()
+        lastname = request.form.get('lastname').title().strip()
         email = request.form.get('email').lower().strip()
         password = request.form.get('password')
         password_2 = request.form.get('password_2')
@@ -76,10 +108,18 @@ def signup_page():
         hashed_password = bcrypt.generate_password_hash(password)
 
         try:
-            insert_data("INSERT INTO user (fname, lname, email, password) VALUES (?, ?, ?, ?)",
+            insert_data("INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)",
                         (firstname, lastname, email, hashed_password))
         except sqlite3.IntegrityError:
             return redirect('/signup?error=Email+is+already+used')
 
         return redirect('/login')
-    return render_template("signup.html")
+    return render_template("signup.html", logged_in=is_logged_in())
+
+
+# logout page function
+
+
+
+if __name__ == '__main__':
+    app.run()
