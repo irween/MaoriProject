@@ -15,20 +15,21 @@
     <div class="words">
     {% for word in dictionary_list %}
         <div class="word-box">
-            <div class="word-heading">
+            <div class="word-box-heading">
                 {{ word[0] }}
             </div>
+
             <div class="word-box-image">
                 <img src="/static/images/{{ word[1] }}.png" alt="{{ word[1] }}">
             </div>
+
             <div class="word-box-info">
                 <p><strong>Category:</strong> {{ word[2] }}</p>
                 <p><strong>English:</strong> {{ word[1].title() }}</p>
-                <p><strong>Definition</strong></p>
-                <p>{{ word[3] }}</p>
+                <p><strong>Definition:</strong> {{ word[3] }}</p>
                 <p><strong>Level {{ word[4] }}</strong></p>
             </div>
         </div>
-    </div>
     {% endfor %}
+    </div>
 {% endblock %}

@@ -50,7 +50,9 @@ def is_logged_in():
 # home page
 @app.route('/')
 def home_page():
-    return render_template("home.html", logged_in=is_logged_in())
+    category_list = get_list("SELECT id, name FROM categories", "")
+    return render_template("home.html", logged_in=is_logged_in(),
+                           category_list=category_list)
 
 
 # login page
@@ -59,6 +61,7 @@ def login_page():
     if is_logged_in():
         return redirect("/")
     print("Logging In")
+    category_list = get_list("SELECT id, name FROM categories", "")
     if request.method == "POST":
         email = request.form['email'].strip().lower()
         password = request.form['password'].strip()
@@ -82,12 +85,14 @@ def login_page():
         session['cart'] = []
         print(session)
         return redirect('/')
-    return render_template("login.html", logged_in=is_logged_in())
+    return render_template("login.html", logged_in=is_logged_in(),
+                           category_list=category_list)
 
 
 # signup page
 @app.route('/signup', methods=['POST', 'GET'])
 def signup_page():
+    category_list = get_list("SELECT id, name FROM categories", "")
     if is_logged_in():
         return redirect("/")
     if request.method == 'POST':
@@ -114,7 +119,8 @@ def signup_page():
             return redirect('/signup?error=Email+is+already+used')
 
         return redirect('/login')
-    return render_template("signup.html", logged_in=is_logged_in())
+    return render_template("signup.html", logged_in=is_logged_in(),
+                           category_list=category_list)
 
 
 # logout page function
@@ -127,12 +133,24 @@ def logout_page():
 
 
 # dictionary page
-@app.route('/dictionary')
+@app.route('/dictionary/')
 def dictionary_page():
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
     dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary", "")
     category_list = get_list("SELECT id, name FROM categories", "")
+    return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
+                           category_list=category_list)
+
+
+# category page
+@app.route('/category/<category_id>')
+def category_page(category_id):
+    if not is_logged_in():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+    category_list = get_list("SELECT id, name FROM categories", "")
+    dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary WHERE category = ?",
+                               (category_id,))
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=category_list)
 
