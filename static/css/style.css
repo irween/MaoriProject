@@ -45,6 +45,62 @@ a {
 img {
     width: 100%;
 }
+.word-box img {
+    /*max-width:200px;*/
+}
+
+.words {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.word-box {
+    /*width: 13vw;*/
+    width: 32%;
+    /*float: left;*/
+    /*display: table-cell;*/
+    /*padding: 0.5rem;*/
+    /*margin: 1vw;*/
+    border: 5px solid rgba(60, 60, 60, 1.0);
+    border-radius: 10px;
+    color: rgba(44, 62, 80, 1.0);
+    margin-bottom: 0.5rem;
+}
+
+.word-box-heading {
+    padding: 0.5rem;
+}
+
+.word-box-image {
+    max-height: 250px;
+    object-fit: cover;
+    overflow: clip;
+    border-top: 5px solid rgba(60, 60, 60, 1);
+    border-bottom: 5px solid black;
+}
+
+.word-box-info {
+    padding: 0.5rem;
+
+}
+
+.word-box h3 {
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.word-box p {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.word-box a {
+    border: 1px solid tomato;
+    padding: 0.3rem;
+    text-align: right;
+}
+
 .dataForm {
     margin: 1rem 0;
     border: 1px solid #999;

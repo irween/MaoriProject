@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Maōri Dictionary | Words and Definitions{% endblock %}
+
+{% block heading %}Maōri - English Dictionary - Words{% endblock %}
+
+{% block main %}
+    <div class="category">
+        <ul>
+            {% for category in category_list %}
+                <li><a href="{{ category[0] }}">{{ category[1] }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="words">
+    {% for word in dictionary_list %}
+        <div class="word-box">
+            <div class="word-heading">
+                {{ word[0] }}
+            </div>
+            <div class="word-box-image">
+                <img src="/static/images/{{ word[1] }}.png" alt="{{ word[1] }}">
+            </div>
+            <div class="word-box-info">
+                <p><strong>Category:</strong> {{ word[2] }}</p>
+                <p><strong>English:</strong> {{ word[1].title() }}</p>
+                <p><strong>Definition</strong></p>
+                <p>{{ word[3] }}</p>
+                <p><strong>Level {{ word[4] }}</strong></p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endblock %}

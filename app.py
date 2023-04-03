@@ -3,7 +3,7 @@ import sqlite3
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 
-DATABASE = "languagedatabase.db"
+DATABASE = "maoridb"
 app = Flask(__name__)
 
 bcrypt = Bcrypt(app)
@@ -124,6 +124,17 @@ def logout_page():
     [session.pop(key) for key in list(session.keys())]
     print(list(session.keys()))
     return redirect('/?message=You+have+successfully+logged+out')
+
+
+# dictionary page
+@app.route('/dictionary')
+def dictionary_page():
+    if not is_logged_in():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+    dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary", "")
+    category_list = get_list("SELECT id, name FROM categories", "")
+    return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
+                           category_list=category_list)
 
 
 # page not found error page
