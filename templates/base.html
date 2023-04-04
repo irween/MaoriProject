@@ -28,9 +28,7 @@
             {% else %}
                 <li><a href="/dictionary/">Dictionary</a></li>
                 {% for category in category_list %}
-                    {{ category[0] }}
-                    {{ category[1] }}
-                    <li><a href="/category/{{ category[0] }}">{{ category[1] }}</a></li>
+                    <li><a href="/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
                 {% endfor %}
                 <li><a href="/logout">Logout</a></li>
             {% endif %}

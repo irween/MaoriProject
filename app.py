@@ -21,10 +21,10 @@ def create_connection(db_file):
 
 
 # get list function
-def get_list(query, execute):
+def get_list(query, params):
     con = create_connection(DATABASE)
     cur = con.cursor()
-    cur.execute(query, execute)
+    cur.execute(query, params)
     category_list = cur.fetchall()
     con.close()
     return category_list
@@ -133,24 +133,26 @@ def logout_page():
 
 
 # dictionary page
-@app.route('/dictionary/')
-def dictionary_page():
+@app.route('/dictionary/<category_id>')
+def dictionary_page(category_id):
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
     dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary", "")
     category_list = get_list("SELECT id, name FROM categories", "")
+
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=category_list)
 
 
 # category page
-@app.route('/category/<category_id>')
-def category_page(category_id):
+@app.route('/category/<cat_id>')
+def category_page(cat_id):
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
     category_list = get_list("SELECT id, name FROM categories", "")
-    dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary WHERE category = ?",
-                               (category_id,))
+    dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary WHERE category_id=?",
+                               (cat_id, ))
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=category_list)
 

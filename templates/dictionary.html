@@ -5,13 +5,6 @@
 {% block heading %}Maōri - English Dictionary - Words{% endblock %}
 
 {% block main %}
-    <div class="category">
-        <ul>
-            {% for category in category_list %}
-                <li><a href="{{ category[0] }}">{{ category[1] }}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
     <div class="words">
     {% for word in dictionary_list %}
         <div class="word-box">
