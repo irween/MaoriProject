@@ -25,9 +25,9 @@ def get_list(query, params):
     con = create_connection(DATABASE)
     cur = con.cursor()
     cur.execute(query, params)
-    list = cur.fetchall()
+    query_list = cur.fetchall()
     con.close()
-    return list
+    return query_list
 
 
 # insert data function
@@ -47,12 +47,23 @@ def is_logged_in():
         return True
 
 
+# check if user is a teacher
+def is_teacher():
+    teacher_list = get_list("SELECT email FROM admin_users", "")
+    if session.get('email') is None:
+        return False
+    for teacher in teacher_list:
+        if session['email'] == teacher[0]:
+            return True
+    return False
+
+
 # home page
 @app.route('/')
 def home_page():
     category_list = get_list("SELECT id, name FROM categories", "")
     return render_template("home.html", logged_in=is_logged_in(),
-                           category_list=category_list)
+                           category_list=category_list, is_teacher=is_teacher())
 
 
 # login page
@@ -86,7 +97,7 @@ def login_page():
         print(session)
         return redirect('/')
     return render_template("login.html", logged_in=is_logged_in(),
-                           category_list=category_list)
+                           category_list=category_list, is_teacher=is_teacher())
 
 
 # signup page
@@ -103,6 +114,7 @@ def signup_page():
         email = request.form.get('email').lower().strip()
         password = request.form.get('password')
         password_2 = request.form.get('password_2')
+        teacher = request.form.get('teacher')
 
         print(password)
         print(password_2)
@@ -115,12 +127,14 @@ def signup_page():
         try:
             insert_data("INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)",
                         (firstname, lastname, email, hashed_password))
+            if teacher is not None:
+                insert_data("INSERT INTO admin_users (email) VALUES (?)", (email, ))
         except sqlite3.IntegrityError:
             return redirect('/signup?error=Email+is+already+used')
 
         return redirect('/login')
     return render_template("signup.html", logged_in=is_logged_in(),
-                           category_list=category_list)
+                           category_list=category_list, is_teacher=is_teacher())
 
 
 # logout page function
@@ -133,8 +147,8 @@ def logout_page():
 
 
 # dictionary page
-@app.route('/dictionary/<category_id>')
-def dictionary_page(category_id):
+@app.route('/dictionary')
+def dictionary_page():
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
@@ -142,7 +156,7 @@ def dictionary_page(category_id):
     category_list = get_list("SELECT id, name FROM categories", "")
 
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
-                           category_list=category_list)
+                           category_list=category_list, is_teacher=is_teacher())
 
 
 # category page
@@ -155,7 +169,18 @@ def category_page(cat_id):
     dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary WHERE category_id=?",
                                (cat_id, ))
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
-                           category_list=category_list)
+                           category_list=category_list, is_teacher=is_teacher())
+
+
+# admin page
+@app.route('/admin')
+def admin_page():
+    if not is_logged_in():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    category_list = get_list("SELECT * FROM categories", "")
+
+    return render_template("admin.html", logged_in=is_logged_in(), category_list=category_list, is_teacher=is_teacher())
 
 
 # page not found error page
