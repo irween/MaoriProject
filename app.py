@@ -25,9 +25,9 @@ def get_list(query, params):
     con = create_connection(DATABASE)
     cur = con.cursor()
     cur.execute(query, params)
-    category_list = cur.fetchall()
+    list = cur.fetchall()
     con.close()
-    return category_list
+    return list
 
 
 # insert data function
@@ -150,6 +150,7 @@ def dictionary_page(category_id):
 def category_page(cat_id):
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+    print(cat_id)
     category_list = get_list("SELECT id, name FROM categories", "")
     dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary WHERE category_id=?",
                                (cat_id, ))
