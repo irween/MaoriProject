@@ -9,18 +9,24 @@
     {% for word in dictionary_list %}
         <div class="word-box">
             <div class="word-box-heading">
-                {{ word[0] }}
+                {{ word[1] }}
             </div>
 
             <div class="word-box-image">
-                <img src="/static/images/{{ word[1] }}.png" alt="{{ word[1] }}">
+                <img src="/static/images/{{ word[2] }}.png" alt="{{ word[2] }}">
             </div>
 
             <div class="word-box-info">
-                <p><strong>Category:</strong> {{ word[2] }}</p>
-                <p><strong>English:</strong> {{ word[1].title() }}</p>
-                <p><strong>Definition:</strong> {{ word[3] }}</p>
-                <p><strong>Level {{ word[4] }}</strong></p>
+                <p><strong>Category:</strong> {{ word[3] }}</p>
+                <p><strong>English:</strong> {{ word[2].title() }}</p>
+                <p><strong>Definition:</strong> {{ word[4] }}</p>
+                <p><strong>Level {{ word[5] }}</strong></p>
+                {% if is_teacher %}
+                    <form action="/delete_word/" method="post">
+                        <input type="hidden" name="word" value="{{ word[0] }}, {{ word[1] }}">
+                        <input type="submit" value="Delete {{ word[1] }}">
+                    </form>
+                {% endif %}
             </div>
         </div>
     {% endfor %}

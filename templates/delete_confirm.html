@@ -6,7 +6,7 @@
 
 {% block main %}
 <h3>Are you sure you want to delete {{ type }} {{ cat_name }}?
-    <a href="/delete_{{ type }}_confirm/{{ id }}">Yes</a> /
+    <a href="/delete_confirm/{{ type }},{{ id }}">Yes</a> /
     <a href="/admin">No</a>
 </h3>
 {% endblock %}
