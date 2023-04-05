@@ -257,6 +257,29 @@ def delete_word_page():
     return redirect('/admin')
 
 
+# add word page
+@app.route('/add_word', methods=['POST', 'GET'])
+def add_word_page():
+    if not is_logged_in() and 1 not in is_teacher():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    if request.method == 'POST':
+        print(request.form)
+
+        maori = request.form.get('maori').lower().strip()
+        english = request.form.get('english').lower().strip()
+        category = request.form.get('category').lower().strip()
+        definition = request.form.get('definition').lower().strip()
+        level = request.form.get('level').lower().strip()
+
+        try:
+            insert_data("INSERT INTO vocabulary (maori, english, category, definition, level) VALUES (?, ?, ?, ?, ?)",
+                        (maori, english, category, definition, level))
+        except sqlite3.IntegrityError:
+            return redirect('/add_word?error=Word+already+exists')
+    return redirect('/admin')
+
+
 # page not found error page
 @app.errorhandler(404)
 def page_not_found(e):
