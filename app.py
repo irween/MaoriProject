@@ -49,12 +49,10 @@ def is_logged_in():
 
 # check if user is a teacher
 def is_teacher():
-    teacher_list = get_list("SELECT email FROM admin_users", "")
-    if session.get('email') is None:
-        return False
-    for teacher in teacher_list:
-        if session['email'] == teacher[0]:
-            return True
+    teacher_list = get_list("SELECT teacher FROM users", "")
+    print(teacher_list)
+    if 1 in teacher_list[0]:
+        return True
     return False
 
 
@@ -124,11 +122,15 @@ def signup_page():
 
         hashed_password = bcrypt.generate_password_hash(password)
 
+        if teacher is not None:
+            teacher = 1
+            query = "INSERT INTO users (firstname, lastname, email, password" + teacher + ") VALUES (?, ?, ?, ?, ?)"
+            print(query)
+        else:
+            teacher = 0
+            query = "INSERT INTO users (firstname, lastname, email, password" + teacher + ") VALUES (?, ?, ?, ?)"
         try:
-            insert_data("INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)",
-                        (firstname, lastname, email, hashed_password))
-            if teacher is not None:
-                insert_data("INSERT INTO admin_users (email) VALUES (?)", (email, ))
+            insert_data(query, (firstname, lastname, email, hashed_password))
         except sqlite3.IntegrityError:
             return redirect('/signup?error=Email+is+already+used')
 
@@ -147,12 +149,12 @@ def logout_page():
 
 
 # dictionary page
-@app.route('/dictionary')
+@app.route('/dictionary/')
 def dictionary_page():
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
-    dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary", "")
+    dictionary_list = get_list("SELECT id, maori, english, category, definition, level FROM vocabulary", "")
     category_list = get_list("SELECT id, name FROM categories", "")
 
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
@@ -175,12 +177,84 @@ def category_page(cat_id):
 # admin page
 @app.route('/admin')
 def admin_page():
-    if not is_logged_in():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+    if not is_logged_in() and 1 not in is_teacher():
+        return redirect("/login?error=You+must+be+logged+in+or+admin+to+access+this+page")
 
     category_list = get_list("SELECT * FROM categories", "")
 
     return render_template("admin.html", logged_in=is_logged_in(), category_list=category_list, is_teacher=is_teacher())
+
+
+# add category page
+@app.route('/add_category', methods=['POST', 'GET'])
+def add_category_page():
+    if not is_logged_in() and 1 not in is_teacher():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    if request.method == 'POST':
+        print(request.form)
+
+        category = request.form.get('category_name').lower().strip()
+
+        query = "INSERT INTO categories (name) VALUES (?)"
+        try:
+            insert_data(query, (category,))
+        except sqlite3.IntegrityError:
+            return redirect('/add_category?error=Category+already+exists')
+    return redirect('/admin')
+
+
+# delete category page
+@app.route('/delete_category/', methods=['POST'])
+def delete_category_page():
+    if not is_logged_in() and 1 not in is_teacher():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    if request.method == 'POST':
+        category = request.form.get('cat_id')
+        print(category)
+        category = category.split(",")
+        cat_id = category[0]
+        cat_name = category[1]
+        print(category, cat_id, cat_name)
+        return render_template("delete_confirm.html", id=cat_id, cat_name=cat_name, type="category")
+
+    return redirect('/admin')
+
+
+# delete_confirm category
+@app.route('/delete_confirm/<deletion>')
+def delete_category(deletion):
+    if not is_logged_in() and 1 not in is_teacher():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    delete_type = deletion.split(",")[0]
+    if delete_type == "category":
+        cat_id = deletion.split(",")[1]
+        print(cat_id)
+        insert_data("DELETE FROM vocabulary WHERE category_id=?", (cat_id,))
+        insert_data("DELETE FROM categories WHERE id=?", (cat_id,))
+    elif delete_type == "word":
+        word_id = deletion.split(",")[1]
+        insert_data("DELETE FROM vocabulary WHERE id=?", (word_id,))
+    return redirect('/admin')
+
+
+# delete word page
+@app.route('/delete_word/', methods=['POST'])
+def delete_word_page():
+    if not is_logged_in() and 1 not in is_teacher():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    if request.method == 'POST':
+        word = request.form.get('word')
+        print(word)
+        word = word.split(",")
+        word_id = word[0]
+        word_name = word[1]
+        return render_template("delete_confirm.html", id=word_id, word_name=word_name, type="word")
+
+    return redirect('/admin')
 
 
 # page not found error page
