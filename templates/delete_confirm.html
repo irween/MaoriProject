@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Maōri Dictionary | Delete{% endblock %}
+
+{% block heading %}Maōri - English Dictionary - Delete Category{% endblock %}
+
+{% block main %}
+<h3>Are you sure you want to delete {{ type }} {{ cat_name }}?
+    <a href="/delete_confirm/{{ type }},{{ id }}">Yes</a> /
+    <a href="/admin">No</a>
+</h3>
+{% endblock %}
