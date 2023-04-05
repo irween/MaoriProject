@@ -49,9 +49,12 @@ def is_logged_in():
 
 # check if user is a teacher
 def is_teacher():
-    teacher_list = get_list("SELECT teacher FROM users", "")
-    print(teacher_list)
-    if 1 in teacher_list[0]:
+    if not is_logged_in():
+        return False
+
+    teacher_list = get_list("SELECT teacher FROM users WHERE email = ?", (session['email'],))
+    if teacher_list[0][0] == 1:
+        print(teacher_list)
         return True
     return False
 
@@ -91,11 +94,10 @@ def login_page():
         session['email'] = email
         session['user_id'] = user_id
         session['firstname'] = first_name
-        session['cart'] = []
         print(session)
         return redirect('/')
     return render_template("login.html", logged_in=is_logged_in(),
-                           category_list=category_list, is_teacher=is_teacher())
+                           category_list=category_list)
 
 
 # signup page
@@ -124,19 +126,18 @@ def signup_page():
 
         if teacher is not None:
             teacher = 1
-            query = "INSERT INTO users (firstname, lastname, email, password" + teacher + ") VALUES (?, ?, ?, ?, ?)"
-            print(query)
         else:
             teacher = 0
-            query = "INSERT INTO users (firstname, lastname, email, password" + teacher + ") VALUES (?, ?, ?, ?)"
         try:
-            insert_data(query, (firstname, lastname, email, hashed_password))
+            query = "INSERT INTO users (firstname, lastname, email, password, teacher) VALUES (?, ?, ?, ?, ?)"
+            print(query)
+            insert_data(query, (firstname, lastname, email, hashed_password, teacher))
         except sqlite3.IntegrityError:
             return redirect('/signup?error=Email+is+already+used')
 
         return redirect('/login')
     return render_template("signup.html", logged_in=is_logged_in(),
-                           category_list=category_list, is_teacher=is_teacher())
+                           category_list=category_list)
 
 
 # logout page function
@@ -154,9 +155,10 @@ def dictionary_page():
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
-    dictionary_list = get_list("SELECT id, maori, english, category, definition, level FROM vocabulary", "")
+    dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by FROM vocabulary", "")
     category_list = get_list("SELECT id, name FROM categories", "")
 
+    print(dictionary_list)
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=category_list, is_teacher=is_teacher())
 
@@ -168,7 +170,8 @@ def category_page(cat_id):
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
     print(cat_id)
     category_list = get_list("SELECT id, name FROM categories", "")
-    dictionary_list = get_list("SELECT maori, english, category, definition, level FROM vocabulary WHERE category_id=?",
+    dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+                               "FROM vocabulary WHERE category_id=?",
                                (cat_id, ))
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=category_list, is_teacher=is_teacher())
@@ -236,7 +239,10 @@ def delete_category(deletion):
         insert_data("DELETE FROM categories WHERE id=?", (cat_id,))
     elif delete_type == "word":
         word_id = deletion.split(",")[1]
+        print(word_id)
         insert_data("DELETE FROM vocabulary WHERE id=?", (word_id,))
+    insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM vocabulary) WHERE name = 'vocabulary'", "")
+    insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM categories) WHERE name = 'categories'", "")
     return redirect('/admin')
 
 
@@ -267,14 +273,23 @@ def add_word_page():
         print(request.form)
 
         maori = request.form.get('maori').lower().strip()
+        print("maori: " + maori)
         english = request.form.get('english').lower().strip()
-        category = request.form.get('category').lower().strip()
+        print("english: " + english)
+        category = request.form.get('category').split(",")
+        print(category)
         definition = request.form.get('definition').lower().strip()
+        print("definition: " + definition)
         level = request.form.get('level').lower().strip()
+        print("level: " + level)
+
+        user = session['firstname'] + " " + session['email']
+        print(user)
 
         try:
-            insert_data("INSERT INTO vocabulary (maori, english, category, definition, level) VALUES (?, ?, ?, ?, ?)",
-                        (maori, english, category, definition, level))
+            insert_data("INSERT INTO vocabulary (maori, english, category, definition, level, added_by, category_id) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (maori, english, category[1], definition, level, user, category[0]))
         except sqlite3.IntegrityError:
             return redirect('/add_word?error=Word+already+exists')
     return redirect('/admin')

@@ -20,8 +20,9 @@
                 <p><strong>Category:</strong> {{ word[3] }}</p>
                 <p><strong>English:</strong> {{ word[2].title() }}</p>
                 <p><strong>Definition:</strong> {{ word[4] }}</p>
-                <p><strong>Level {{ word[5] }}</strong></p>
+                <p><strong>Level: {{ word[5] }}</strong></p>
                 {% if is_teacher %}
+                    <p><strong>Added By: </strong>{{ word[6] }}</p>
                     <form action="/delete_word/" method="post">
                         <input type="hidden" name="word" value="{{ word[0] }}, {{ word[1] }}">
                         <input type="submit" value="Delete {{ word[1] }}">
