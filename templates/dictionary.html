@@ -2,7 +2,7 @@
 
 {% block title %}Maōri Dictionary | Words and Definitions{% endblock %}
 
-{% block heading %}Maōri - English Dictionary - Words{% endblock %}
+{% block heading %}Maōri - English Dictionary - All Words{% endblock %}
 
 {% block main %}
     <div class="words">
@@ -13,7 +13,8 @@
             </div>
 
             <div class="word-box-image">
-                <img src="/static/images/{{ word[2] }}.png" alt="{{ word[2] }}">
+                <img src="/static/images/{{ word[2] }}.png"
+                     onerror="this.onerror=null; this.src='/static/images/noimage.png'">
             </div>
 
             <div class="word-box-info">

@@ -26,9 +26,9 @@
                 <li><a href="/login">Login</a></li>
                 <li><a href="/signup">Signup</a></li>
             {% else %}
-                <li><a href="/dictionary/">Dictionary</a></li>
+                <li><a href="/dictionary/all_words/1">All Words</a></li>
                 {% for category in category_list %}
-                    <li><a href="/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
+                    <li><a href="/dictionary/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
                 {% endfor %}
                 {% if is_teacher %}
                     <li><a href="/admin">Admin</a></li>
