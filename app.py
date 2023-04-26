@@ -152,8 +152,7 @@ def logout_page():
 # dictionary page
 @app.route('/dictionary/<cat_type>/<cat_id>')
 def dictionary_page(cat_type, cat_id):
-    if not is_logged_in():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+    dictionary_list = []
     if cat_type == "category":
         dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
                                    "FROM vocabulary WHERE category_id=?",
@@ -165,6 +164,7 @@ def dictionary_page(cat_type, cat_id):
     elif cat_type == "all_words":
         dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
                                    "FROM vocabulary", "")
+
     category_list = get_list("SELECT id, name FROM categories", "")
 
     print(dictionary_list)
