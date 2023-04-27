@@ -18,12 +18,32 @@
             </div>
 
             <div class="word-box-info">
+                {% if not is_teacher %}
                 <p><strong>Category:</strong> {{ word[3] }}</p>
                 <p><strong>English:</strong> {{ word[2].title() }}</p>
                 <p><strong>Definition:</strong> {{ word[4] }}</p>
                 <p><strong>Level: {{ word[5] }}</strong></p>
-                {% if is_teacher %}
-                    <p><strong>Added By: </strong>{{ word[6] }}</p>
+                {% elif is_teacher %}
+                    <form action="/edit_word/" method="post">
+                        <label for="maori"><strong>Maori: </strong></label>
+                        <input type="text" name="maori" id="maori" value="{{ word[1] }}">
+
+                        <label for="category"><strong>Category:</strong></label>
+                        <input type="text" name="category" id="category" value="{{ word[3] }}">
+
+                        <label for="english"><strong>English:</strong></label>
+                        <input type="text" name="english" id="english" value="{{ word[2].title() }}">
+
+                        <label for="definition"><strong>Definition:</strong></label>
+                        <input type="text" name="definition" id="definition" value="{{ word[4] }}">
+
+                        <label for="level"><strong>Level:</strong></label>
+                        <input type="number" name="level" id="level" value="{{ word[5] }}">
+
+                        <p><strong>Added By: </strong>{{ word[6] }}</p>
+
+                        <input type="submit" value="Edit Word">
+                    </form>
                     <form action="/delete_word/" method="post">
                         <input type="hidden" name="word" value="{{ word[0] }}, {{ word[1] }}">
                         <input type="submit" value="Delete {{ word[1] }}">

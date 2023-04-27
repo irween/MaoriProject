@@ -281,12 +281,35 @@ def add_word_page():
         user = session['firstname'] + " " + session['email']
         print(user)
 
+        dictionary_list = get_list("SELECT maori, english FROM vocabulary", "")
+        for word in dictionary_list:
+            if maori == word[0] and english == word[1]:
+                return redirect('/admin?error=Word+already+exists')
+
         try:
             insert_data("INSERT INTO vocabulary (maori, english, category, definition, level, added_by, category_id) "
                         "VALUES (?, ?, ?, ?, ?, ?, ?)",
                         (maori, english, category[1], definition, level, user, category[0]))
         except sqlite3.IntegrityError:
             return redirect('/add_word?error=Word+already+exists')
+    return redirect('/admin')
+
+
+# edit word page
+@app.route('/edit_word/', methods=['POST'])
+def edit_word_page():
+    if not is_logged_in() and 1 not in is_teacher():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    if request.method == 'POST':
+        word = request.form.get('word')
+        print(word)
+        word = word.split(",")
+        word_id = word[0]
+        word_name = word[1]
+        print(word_id, word_name)
+        return redirect('/')
+
     return redirect('/admin')
 
 
