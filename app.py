@@ -154,15 +154,15 @@ def logout_page():
 def dictionary_page(cat_type, cat_id):
     dictionary_list = []
     if cat_type == "category":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by, category_id "
                                    "FROM vocabulary WHERE category_id=?",
                                    (cat_id,))
     elif cat_type == "level":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by, category_id "
                                    "FROM vocabulary WHERE level=?",
                                    (cat_id,))
     elif cat_type == "all_words":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by, category_id "
                                    "FROM vocabulary", "")
 
     category_list = get_list("SELECT id, name FROM categories", "")
@@ -302,13 +302,22 @@ def edit_word_page():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
     if request.method == 'POST':
-        word = request.form.get('word')
-        print(word)
-        word = word.split(",")
-        word_id = word[0]
-        word_name = word[1]
-        print(word_id, word_name)
-        return redirect('/')
+        maori_word = request.form.get('maori')
+        print(maori_word)
+        english_word = request.form.get('english')
+        print(english_word)
+        category = request.form.get('category').split(",")
+        print(category)
+        definition = request.form.get('definition')
+        print(definition)
+        level = request.form.get('level')
+        print(level)
+        word_id = request.form.get('id')
+        print(word_id)
+
+        insert_data("UPDATE vocabulary SET maori=?, english=?, category=?, definition=?, level=?, category_id=? "
+                    "WHERE id=?", (maori_word, english_word, category[1], definition, level, category[0], word_id))
+        return redirect(request.referrer + "?=edit_word")
 
     return redirect('/admin')
 

@@ -14,34 +14,53 @@
 
             <div class="word-box-image">
                 <img src="/static/images/{{ word[2] }}.png"
-                     onerror="this.onerror=null; this.src='/static/images/noimage.png'">
+                     onerror="this.onerror=null; this.src='/static/images/noimage.png'" alt="{{ word[1] }}, {{ word[2] }}">
             </div>
 
             <div class="word-box-info">
                 {% if not is_teacher %}
-                <p><strong>Category:</strong> {{ word[3] }}</p>
+                <p><strong>Category:</strong> {{ word[3].title() }}</p>
                 <p><strong>English:</strong> {{ word[2].title() }}</p>
                 <p><strong>Definition:</strong> {{ word[4] }}</p>
                 <p><strong>Level: {{ word[5] }}</strong></p>
                 {% elif is_teacher %}
                     <form action="/edit_word/" method="post">
                         <label for="maori"><strong>Maori: </strong></label>
-                        <input type="text" name="maori" id="maori" value="{{ word[1] }}">
+                        <input type="text" name="maori" id="maori" value="{{ word[1] }}"><br>
 
                         <label for="category"><strong>Category:</strong></label>
-                        <input type="text" name="category" id="category" value="{{ word[3] }}">
+                        <select id="category" name="category">
+                            {% for category in category_list %}
+                            <option{% if category[0] == word[7] %}
+                                        value="{{ word[7] }}, {{ word[3] }}" selected
+                                    {% else %}
+                                        value="{{ category[0] }}, {{ category[1] }}"
+                                    {% endif %}>
+                            {{ category[1].title() }}</option>
+                            {% endfor %}
+                        </select><br>
 
                         <label for="english"><strong>English:</strong></label>
-                        <input type="text" name="english" id="english" value="{{ word[2].title() }}">
+                        <input type="text" name="english" id="english" value="{{ word[2].title() }}"><br>
 
                         <label for="definition"><strong>Definition:</strong></label>
-                        <input type="text" name="definition" id="definition" value="{{ word[4] }}">
+                        <input type="text" name="definition" id="definition" value="{{ word[4] }}"><br>
 
                         <label for="level"><strong>Level:</strong></label>
-                        <input type="number" name="level" id="level" value="{{ word[5] }}">
+                        <select id="level" name="level">
+                            {% for level in range(1, 11) %}
+                            <option{% if level == word[5] %}
+                                        value="{{ word[5] }}" selected
+                                    {% else %}
+                                        value="{{ level }}"
+                                    {% endif %}>
+                            {{ level }}</option>
+                            {% endfor %}
+                        </select><br>
 
-                        <p><strong>Added By: </strong>{{ word[6] }}</p>
+                        <p><strong>Added By: </strong>{{ word[6] }}</p><br>
 
+                        <input type="hidden" value="{{ word[0] }}" name="id">
                         <input type="submit" value="Edit Word">
                     </form>
                     <form action="/delete_word/" method="post">
