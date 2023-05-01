@@ -215,7 +215,6 @@ def delete_category_page():
         cat_id = category[0]
         cat_name = category[1]
         print(category, cat_id, cat_name)
-        insert_data("UPDATE vocabulary SET category_id=17 WHERE category_id=?", (cat_id,))
         return render_template("delete_confirm.html", id=cat_id, cat_name=cat_name, type="category")
 
     return redirect('/admin')
@@ -303,21 +302,13 @@ def edit_word_page():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
     if request.method == 'POST':
-        word_id = request.form.get('word_id')
-        maori = request.form.get('maori').lower()
-        print(maori)
-        category = request.form.get('category').lower().split(", ")
-        print(category[0], category[1])
-        definition = request.form.get('definition').lower()
-        print(definition)
-        english = request.form.get('english').lower()
-        print(english)
-        level = request.form.get('level')
-        print(level)
-
-        insert_data("UPDATE vocabulary SET maori=?, english=?, category=?, definition=?, level=?, category_id=? "
-                    "WHERE id={}".format(word_id), (maori, english, category[1], definition, level, category[0]))
-        return redirect(request.referrer)
+        word = request.form.get('word')
+        print(word)
+        word = word.split(",")
+        word_id = word[0]
+        word_name = word[1]
+        print(word_id, word_name)
+        return redirect('/')
 
     return redirect('/admin')
 
