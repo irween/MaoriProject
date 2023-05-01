@@ -3,15 +3,22 @@ import sqlite3
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 
+# setting the database file name
 DATABASE = "maoridb"
 app = Flask(__name__)
 
+# using bcrypt for password encryption
 bcrypt = Bcrypt(app)
 app.secret_key = "aj;f3jp89j"
 
 
 # create connection function
 def create_connection(db_file):
+    """
+    create a database connection to the SQLite database specified by db_file
+    @param db_file: the database file
+    @return: the connection to the database, or nothing if there is an error
+    """
     try:
         connection = sqlite3.connect(db_file)
         return connection
@@ -22,6 +29,12 @@ def create_connection(db_file):
 
 # get list function
 def get_list(query, params):
+    """
+    query all rows in the table
+    @param query: the query to be executed
+    @param params: the parameters of the query
+    @return: returns the list from the query
+    """
     con = create_connection(DATABASE)
     cur = con.cursor()
     cur.execute(query, params)
@@ -32,6 +45,12 @@ def get_list(query, params):
 
 # insert data function
 def insert_data(query, params):
+    """
+    insert data into the database
+    @param query: query: the query to be executed
+    @param params: params: the parameters of the query
+    @return: returns nothing
+    """
     con = create_connection(DATABASE)
     cur = con.cursor()
     cur.execute(query, params)
@@ -41,7 +60,11 @@ def insert_data(query, params):
 
 # check if user is logged in
 def is_logged_in():
-    if session.get('email') is None:
+    """
+    check if the user is logged in
+    @return: returns true if the user is logged in, false if not
+    """
+    if session.get('email') is None:  # checks if the user has an email in the current session, i.e. logged in
         return False
     else:
         return True
@@ -49,11 +72,16 @@ def is_logged_in():
 
 # check if user is a teacher
 def is_teacher():
-    if not is_logged_in():
+    """
+    check if the user is a teacher
+    @return: returns true if the user is a teacher, false if not
+    """
+    if not is_logged_in():  # makes sure that the user is logged in
         return False
 
+    # gets the teacher value from the database for the given user
     teacher_list = get_list("SELECT teacher FROM users WHERE email = ?", (session['email'],))
-    if teacher_list[0][0] == 1:
+    if teacher_list[0][0] == 1:  # checks if the accounts teacher value is 1 (true) or 0 (false)
         print(teacher_list)
         return True
     return False
@@ -62,6 +90,11 @@ def is_teacher():
 # home page
 @app.route('/')
 def home_page():
+    """
+    renders the home page
+    @return:
+    """
+    # gets the category list to display in the navigation sidebar
     category_list = get_list("SELECT id, name FROM categories", "")
     return render_template("home.html", logged_in=is_logged_in(),
                            category_list=category_list, is_teacher=is_teacher())
@@ -70,27 +103,41 @@ def home_page():
 # login page
 @app.route('/login', methods=['POST', 'GET'])
 def login_page():
+    """
+    renders the login page
+    uses the is_logged_in() function to check if the user is already logged in
+    gets the form values from the login form and checks if the email and password are correct
+    @return:
+    """
     if is_logged_in():
         return redirect("/")
     print("Logging In")
+
+    # gets the category list to display in the navigation sidebar
     category_list = get_list("SELECT id, name FROM categories", "")
     if request.method == "POST":
+        # gets the email and password from the login form
         email = request.form['email'].strip().lower()
         password = request.form['password'].strip()
 
+        # gets the user data from the database
         user_data = get_list("SELECT id, firstname, password FROM users WHERE email = ?", (email,))
 
+        # checks if the user exists
         try:
             user_id = user_data[0]
             first_name = user_id[1]
             db_password = user_id[2]
 
+        # if the user does not exist, redirect to the login page with an error message
         except IndexError:
             return redirect("/login?error=Email+invalid+or+password+incorrect")
 
+        # checks if the password is correct
         if not bcrypt.check_password_hash(db_password, password):
             return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
 
+        # if the password is correct, set the session variables and redirect to the home page
         session['email'] = email
         session['user_id'] = user_id
         session['firstname'] = first_name
@@ -103,12 +150,23 @@ def login_page():
 # signup page
 @app.route('/signup', methods=['POST', 'GET'])
 def signup_page():
+    """
+    renders the signup page
+    uses the is_logged_in() function to check if the user is already logged in
+    gets the form values from the signup form and inserts them into the database
+    @return:
+    """
+
+    # gets the category list to display in the navigation sidebar
     category_list = get_list("SELECT id, name FROM categories", "")
     if is_logged_in():
         return redirect("/")
+
+    # if the request method is POST, get the form values and insert them into the database
     if request.method == 'POST':
         print(request.form)
 
+        # gets the form values
         firstname = request.form.get('firstname').title().strip()
         lastname = request.form.get('lastname').title().strip()
         email = request.form.get('email').lower().strip()
@@ -119,19 +177,25 @@ def signup_page():
         print(password)
         print(password_2)
 
+        # checks if the passwords match
         if password != password_2:
             return redirect("/signup?error=Passwords+do+not+match")
 
+        # hashes the password using bcrypt
         hashed_password = bcrypt.generate_password_hash(password)
 
+        # checks if the user selected that they're a teacher
         if teacher is not None:
             teacher = 1
         else:
             teacher = 0
+
+        # inserts the user data into the database
         try:
-            query = "INSERT INTO users (firstname, lastname, email, password, teacher) VALUES (?, ?, ?, ?, ?)"
-            print(query)
-            insert_data(query, (firstname, lastname, email, hashed_password, teacher))
+            insert_data("INSERT INTO users (firstname, lastname, email, password, teacher) VALUES (?, ?, ?, ?, ?)",
+                        (firstname, lastname, email, hashed_password, teacher))
+
+        # if the email is already in use, redirect to the signup page with an error message
         except sqlite3.IntegrityError:
             return redirect('/signup?error=Email+is+already+used')
 
@@ -143,6 +207,10 @@ def signup_page():
 # logout page function
 @app.route('/logout')
 def logout_page():
+    """
+    logs the user out by removing the session variables
+    @return:
+    """
     print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
     print(list(session.keys()))
@@ -152,19 +220,26 @@ def logout_page():
 # dictionary page
 @app.route('/dictionary/<cat_type>/<cat_id>')
 def dictionary_page(cat_type, cat_id):
+    """
+    renders the dictionary page
+    @param cat_type:
+    @param cat_id:
+    @return:
+    """
     dictionary_list = []
+
+    # gets the list of words from the specific category if the current page is for category
     if cat_type == "category":
         dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
                                    "FROM vocabulary WHERE category_id=?",
                                    (cat_id,))
-    elif cat_type == "level":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
-                                   "FROM vocabulary WHERE level=?",
-                                   (cat_id,))
+
+    # gets the list of all words if the current page is for all words
     elif cat_type == "all_words":
         dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
                                    "FROM vocabulary", "")
 
+    # gets the list of words from the specific category if the current page is for category
     category_list = get_list("SELECT id, name FROM categories", "")
 
     print(dictionary_list)
@@ -175,6 +250,11 @@ def dictionary_page(cat_type, cat_id):
 # admin page
 @app.route('/admin')
 def admin_page():
+    """
+    renders the admin page
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+    @return:
+    """
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+or+admin+to+access+this+page")
 
@@ -186,17 +266,27 @@ def admin_page():
 # add category page
 @app.route('/add_category', methods=['POST', 'GET'])
 def add_category_page():
+    """
+    renders the add category page
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+    gets the form values from the add category form and inserts them into the database
+    @return:
+    """
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
+    # gets the data from the form if the request method is POST
     if request.method == 'POST':
         print(request.form)
 
+        # gets the form values
         category = request.form.get('category_name').lower().strip()
 
-        query = "INSERT INTO categories (name) VALUES (?)"
+        # inserts the category into the database
         try:
-            insert_data(query, (category,))
+            insert_data("INSERT INTO categories (name) VALUES (?)", (category,))
+
+        # if the category already exists, redirect to the add category page with an error message
         except sqlite3.IntegrityError:
             return redirect('/add_category?error=Category+already+exists')
     return redirect('/admin')
@@ -205,12 +295,22 @@ def add_category_page():
 # delete category page
 @app.route('/delete_category/', methods=['POST'])
 def delete_category_page():
+    """
+    renders the delete category page
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+    gets the form values from the delete category form and inserts them into the database
+    @return:
+    """
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
+    # gets the data from the form if the request method is POST
     if request.method == 'POST':
+        # gets the form values
         category = request.form.get('cat_id')
         print(category)
+
+        # making cat_id and cat_name variables equal to the correct values
         category = category.split(",")
         cat_id = category[0]
         cat_name = category[1]
@@ -223,6 +323,13 @@ def delete_category_page():
 # delete_confirm category
 @app.route('/delete_confirm/<deletion>')
 def delete_category(deletion):
+    """
+    deletes the category from the database
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+    gets deletion type from the url and deletes the category or word(s) from the database
+    @param deletion:
+    @return:
+    """
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
@@ -230,12 +337,16 @@ def delete_category(deletion):
     if delete_type == "category":
         cat_id = deletion.split(",")[1]
         print(cat_id)
+        insert_data("UPDATE vocabulary SET category_id=17 WHERE category_id=?", (cat_id,))
         insert_data("DELETE FROM vocabulary WHERE category_id=?", (cat_id,))
         insert_data("DELETE FROM categories WHERE id=?", (cat_id,))
     elif delete_type == "word":
         word_id = deletion.split(",")[1]
         print(word_id)
         insert_data("DELETE FROM vocabulary WHERE id=?", (word_id,))
+    elif delete_type == "junk":
+        cat_id = deletion.split(",")[1]
+        insert_data("DELETE FROM vocabulary WHERE category_id=?", (cat_id,))
     insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM vocabulary) WHERE name = 'vocabulary'", "")
     insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM categories) WHERE name = 'categories'", "")
     return redirect('/admin')
@@ -309,6 +420,22 @@ def edit_word_page():
         word_name = word[1]
         print(word_id, word_name)
         return redirect('/')
+
+    return redirect('/admin')
+
+
+# delete junk words
+@app.route('/delete_junk_words', methods=['POST'])
+def delete_junk_words():
+    if not is_logged_in():
+        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+
+    if request.method == 'POST':
+        category_name = request.form.get('junk')
+        cat_id = get_list("SELECT id FROM categories WHERE name=?", (category_name,))[0][0]
+        print(cat_id)
+
+        return render_template("delete_confirm.html", id=cat_id, cat_name=category_name, type="junk")
 
     return redirect('/admin')
 
