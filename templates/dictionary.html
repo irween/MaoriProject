@@ -28,8 +28,11 @@
                         <label for="maori"><strong>Maori: </strong></label>
                         <input type="text" name="maori" id="maori" value="{{ word[1] }}">
 
-                        <label for="category"><strong>Category:</strong></label>
-                        <input type="text" name="category" id="category" value="{{ word[3] }}">
+                        <select id="cat_id" name="category" required>
+                            {% for category in category_list %}
+                                <option value="{{ category[0] }}, {{ category[1] }}">{{ category[1] }}</option>
+                            {% endfor %}
+                        </select>
 
                         <label for="english"><strong>English:</strong></label>
                         <input type="text" name="english" id="english" value="{{ word[2].title() }}">
@@ -38,10 +41,11 @@
                         <input type="text" name="definition" id="definition" value="{{ word[4] }}">
 
                         <label for="level"><strong>Level:</strong></label>
-                        <input type="number" name="level" id="level" value="{{ word[5] }}">
+                        <input type="number" name="level" id="level" value="{{ word[5] }}" min="1" max="10">
 
                         <p><strong>Added By: </strong>{{ word[6] }}</p>
 
+                        <input type="hidden" name="word_id" value="{{ word[0] }}">
                         <input type="submit" value="Edit Word">
                     </form>
                     <form action="/delete_word/" method="post">
