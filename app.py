@@ -58,6 +58,16 @@ def insert_data(query, params):
     con.close()
 
 
+# get junk id
+def junk_id():
+    """
+    gets the id of the junk category
+    @return:
+    """
+    id_junk = get_list("SELECT id FROM categories WHERE name='junk'", "")
+    return id_junk[0][0]
+
+
 # check if user is logged in
 def is_logged_in():
     """
@@ -94,10 +104,9 @@ def home_page():
     renders the home page
     @return:
     """
-    # gets the category list to display in the navigation sidebar
-    category_list = get_list("SELECT id, name FROM categories", "")
     return render_template("home.html", logged_in=is_logged_in(),
-                           category_list=category_list, is_teacher=is_teacher())
+                           category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
+                           junk_id=junk_id())
 
 
 # login page
@@ -113,8 +122,6 @@ def login_page():
         return redirect("/")
     print("Logging In")
 
-    # gets the category list to display in the navigation sidebar
-    category_list = get_list("SELECT id, name FROM categories", "")
     if request.method == "POST":
         # gets the email and password from the login form
         email = request.form['email'].strip().lower()
@@ -144,7 +151,8 @@ def login_page():
         print(session)
         return redirect('/')
     return render_template("login.html", logged_in=is_logged_in(),
-                           category_list=category_list)
+                           category_list=get_list("SELECT id, name FROM categories", ""),
+                           junk_id=junk_id(), message=request.args.get('message'))
 
 
 # signup page
@@ -157,8 +165,6 @@ def signup_page():
     @return:
     """
 
-    # gets the category list to display in the navigation sidebar
-    category_list = get_list("SELECT id, name FROM categories", "")
     if is_logged_in():
         return redirect("/")
 
@@ -201,7 +207,8 @@ def signup_page():
 
         return redirect('/login')
     return render_template("signup.html", logged_in=is_logged_in(),
-                           category_list=category_list)
+                           category_list=get_list("SELECT id, name FROM categories", ""),
+                           junk_id=junk_id(), message=request.args.get('message'))
 
 
 # logout page function
@@ -214,7 +221,7 @@ def logout_page():
     print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
     print(list(session.keys()))
-    return redirect('/?message=You+have+successfully+logged+out')
+    return redirect('/login?message=You+have+successfully+logged+out')
 
 
 # dictionary page
@@ -230,21 +237,19 @@ def dictionary_page(cat_type, cat_id):
 
     # gets the list of words from the specific category if the current page is for category
     if cat_type == "category":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by, category_id "
                                    "FROM vocabulary WHERE category_id=?",
                                    (cat_id,))
 
     # gets the list of all words if the current page is for all words
     elif cat_type == "all_words":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by, category_id "
                                    "FROM vocabulary", "")
-
-    # gets the list of words from the specific category if the current page is for category
-    category_list = get_list("SELECT id, name FROM categories", "")
 
     print(dictionary_list)
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
-                           category_list=category_list, is_teacher=is_teacher())
+                           category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
+                           junk_id=junk_id(), message=request.args.get('message'))
 
 
 # admin page
@@ -256,11 +261,11 @@ def admin_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+or+admin+to+access+this+page")
+            return redirect("/login?error=You+must+be+logged+in+or+admin+to+access+this+page")
 
-    category_list = get_list("SELECT * FROM categories", "")
-
-    return render_template("admin.html", logged_in=is_logged_in(), category_list=category_list, is_teacher=is_teacher())
+    return render_template("admin.html", logged_in=is_logged_in(),
+                           category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
+                           junk_id=junk_id(), message=request.args.get('message'))
 
 
 # add category page
@@ -333,17 +338,25 @@ def delete_category(deletion):
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
+    # getting the type of deletion from the url
     delete_type = deletion.split(",")[0]
+
+    # deleting the category from the category database and moving the words to a "junk" category incase they are needed
     if delete_type == "category":
         cat_id = deletion.split(",")[1]
         print(cat_id)
+        # moving the words to the junk category
         insert_data("UPDATE vocabulary SET category_id=17 WHERE category_id=?", (cat_id,))
-        insert_data("DELETE FROM vocabulary WHERE category_id=?", (cat_id,))
+        # deleting the category
         insert_data("DELETE FROM categories WHERE id=?", (cat_id,))
+
+    # deleting the word from the database
     elif delete_type == "word":
         word_id = deletion.split(",")[1]
         print(word_id)
         insert_data("DELETE FROM vocabulary WHERE id=?", (word_id,))
+
+    # deleting the all the words in the junk category but keeping the category
     elif delete_type == "junk":
         cat_id = deletion.split(",")[1]
         insert_data("DELETE FROM vocabulary WHERE category_id=?", (cat_id,))
@@ -355,12 +368,20 @@ def delete_category(deletion):
 # delete word page
 @app.route('/delete_word/', methods=['POST'])
 def delete_word_page():
+    """
+    renders the delete word page
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+    gets the form values from the delete word button and sends them to the delete_confirm page
+    @return:
+    """
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
+    # gets the data from the form if the request method is POST
     if request.method == 'POST':
         word = request.form.get('word')
         print(word)
+        # splits the word into the name and id
         word = word.split(",")
         word_id = word[0]
         word_name = word[1]
@@ -372,12 +393,20 @@ def delete_word_page():
 # add word page
 @app.route('/add_word', methods=['POST', 'GET'])
 def add_word_page():
+    """
+    renders the add word page
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+    gets the form values from the add word form and inserts them into the database
+    @return:
+    """
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
+    # gets the data from the form if the request method is POST
     if request.method == 'POST':
         print(request.form)
 
+        # gets the form values
         maori = request.form.get('maori').lower().strip()
         print("maori: " + maori)
         english = request.form.get('english').lower().strip()
@@ -389,18 +418,22 @@ def add_word_page():
         level = request.form.get('level').lower().strip()
         print("level: " + level)
 
+        # getting the username and email from the session to add to the database
         user = session['firstname'] + " " + session['email']
         print(user)
 
+        # checking if the word already exists in the database
         dictionary_list = get_list("SELECT maori, english FROM vocabulary", "")
         for word in dictionary_list:
             if maori == word[0] and english == word[1]:
                 return redirect('/admin?error=Word+already+exists')
 
+        # inserting the data into the database
         try:
             insert_data("INSERT INTO vocabulary (maori, english, category, definition, level, added_by, category_id) "
                         "VALUES (?, ?, ?, ?, ?, ?, ?)",
                         (maori, english, category[1], definition, level, user, category[0]))
+        # if the word already exists in the database redirects to the add word page with an error
         except sqlite3.IntegrityError:
             return redirect('/add_word?error=Word+already+exists')
     return redirect('/admin')
@@ -409,17 +442,35 @@ def add_word_page():
 # edit word page
 @app.route('/edit_word/', methods=['POST'])
 def edit_word_page():
+    """
+    renders the edit word page
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+    gets the form values from the edit word form and sends them to the edit_confirm page
+    @return:
+    """
     if not is_logged_in() and 1 not in is_teacher():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
+    # gets the data from the form if the request method is POST
     if request.method == 'POST':
-        word = request.form.get('word')
-        print(word)
-        word = word.split(",")
-        word_id = word[0]
-        word_name = word[1]
-        print(word_id, word_name)
-        return redirect('/')
+        # gets the form values
+        maori_word = request.form.get('maori')
+        print(maori_word)
+        english_word = request.form.get('english')
+        print(english_word)
+        category = request.form.get('category').split(",")
+        print(category)
+        definition = request.form.get('definition')
+        print(definition)
+        level = request.form.get('level')
+        print(level)
+        word_id = request.form.get('id')
+        print(word_id)
+
+        # updating the database with the new values
+        insert_data("UPDATE vocabulary SET maori=?, english=?, category=?, definition=?, level=?, category_id=? "
+                    "WHERE id=?", (maori_word, english_word, category[1], definition, level, category[0], word_id))
+        return redirect(request.referrer + "?=edit_word")
 
     return redirect('/admin')
 
@@ -427,11 +478,19 @@ def edit_word_page():
 # delete junk words
 @app.route('/delete_junk_words', methods=['POST'])
 def delete_junk_words():
+    """
+    renders the delete junk words page
+    uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
+gets the form values from the delete junk words button and sends them to the delete_confirm page
+    @return:
+    """
     if not is_logged_in():
         return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
 
+    # gets the data from the button if the request method is POST
     if request.method == 'POST':
         category_name = request.form.get('junk')
+        # gets the id of the category "junk"
         cat_id = get_list("SELECT id FROM categories WHERE name=?", (category_name,))[0][0]
         print(cat_id)
 
@@ -443,12 +502,22 @@ def delete_junk_words():
 # page not found error page
 @app.errorhandler(404)
 def page_not_found(e):
+    """
+    renders the page not found error page
+    @param e: the error message
+    @return:
+    """
     return render_template('error.html', logged_in=is_logged_in(), message=e), 404
 
 
 # internal server error page
 @app.errorhandler(500)
 def internal_server_error(e):
+    """
+    renders the internal server error page
+    @param e: the error message
+    @return:
+    """
     return render_template('error.html', logged_in=is_logged_in(), message=e), 500
 
 

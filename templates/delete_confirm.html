@@ -5,7 +5,9 @@
 {% block heading %}Maōri - English Dictionary - Delete Category{% endblock %}
 
 {% block main %}
+{# displays the type and category name of the thing that is being deleted #}
 <h3>Are you sure you want to delete {{ type }} {{ cat_name }}?
+    {# adds the type and id to the url #}
     <a href="/delete_confirm/{{ type }},{{ id }}">Yes</a> /
     <a href="/admin">No</a>
 </h3>

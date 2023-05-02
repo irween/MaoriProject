@@ -5,45 +5,59 @@
 {% block heading %}Maōri - English Dictionary - Sign-up{% endblock %}
 
 {% block main %}
-    <form class="myform" method="POST">
-
+{% if message %}
+    <h5>{{ message }}</h5>
+{% endif %}
+    <form class="form" method="POST">
         <div class="form-group">
-            <div class="form-label">First Name:</div>
-            <div class="form-element"><input type="text" name="firstname" id="firstname" minlength="2" required></div>
+            <div class="form-input">
+                <label class="form-label" for="firstname">First Name: </label>
+                <input type="text" name="firstname" id="firstname" minlength="2" required>
+            </div>
         </div>
         <div class="error">{{ fname_error }}</div>
 
         <div class="form-group">
-            <div class="form-label">Last Name:</div>
-            <div class="form-element"><input type="text" name="lastname" id="lastname" minlength="2" required></div>
+            <div class="form-input">
+                <label class="form-label" for="lastname">Last Name: </label>
+                <input type="text" name="lastname" id="lastname" minlength="2" required>
+            </div>
         </div>
         <div class="error">{{ lname_error }}</div>
 
         <div class="form-group">
-            <div class="form-label">Email:</div>
-            <div class="form-element"><input type="email" name="email" id="email" required></div>
-        </div>
-
-        <div class="form-group">
-            <div class="form-label">Password:</div>
-            <div class="form-element"><input type="password" name="password" id="password" minlength="8" required></div>
-        </div>
-        <div class="error">{{ error }}</div>
-
-        <div class="form-group">
-            <div class="form-label">Password:</div>
-            <div class="form-element"><input type="password" name="password_2" id="password_2" minlength="8" required>
+            <div class="form-input">
+                <label class="form-label" for="email">Email: </label>
+                <input type="email" name="email" id="email" required>
             </div>
         </div>
 
         <div class="form-group">
-            <div class="form-label">Teacher?</div>
-            <div class="form-element"><input type="checkbox" name="teacher" id="teacher" required></div>
+            <div class="form-input">
+                <label class="form-label" for="password">Password: </label>
+                <input type="password" name="password" id="password" minlength="8" required>
+            </div>
+        </div>
+        <div class="error">{{ error }}</div>
+
+        <div class="form-group">
+            <div class="form-input">
+                <label class="form-label" for="password_2">Confirm Password: </label>
+                <input type="password" name="password_2" id="password_2" minlength="8" required>
+            </div>
         </div>
 
         <div class="form-group">
-            <div class="form-label"></div>
-            <div class="form-element"><input type="submit" value="Signup"></div>
+            <div class="form-input">
+                <label class="form-label" for="teacher">Teacher: </label>
+                <input type="checkbox" name="teacher" id="teacher" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="buttons">
+                <input type="submit" value="Signup">
+            </div>
         </div>
 
     </form>

@@ -6,51 +6,70 @@
 
 {% block main %}
     <div class="words">
+    {# displays each word in the dictionary list #}
     {% for word in dictionary_list %}
         <div class="word-box">
             <div class="word-box-heading">
-                {{ word[1] }}
+                {{ word[1].title() }}
             </div>
 
             <div class="word-box-image">
                 <img src="/static/images/{{ word[2] }}.png"
-                     onerror="this.onerror=null; this.src='/static/images/noimage.png'">
+                     onerror="this.onerror=null; this.src='/static/images/noimage.png'"
+                     alt="{{ word[1] }}, {{ word[2] }}">
             </div>
 
             <div class="word-box-info">
+                {# if the user is not a teacher then it displays the page without editing privelages #}
                 {% if not is_teacher %}
-                <p><strong>Category:</strong> {{ word[3] }}</p>
+                <p><strong>Category:</strong> {{ word[3].title() }}</p>
                 <p><strong>English:</strong> {{ word[2].title() }}</p>
                 <p><strong>Definition:</strong> {{ word[4] }}</p>
                 <p><strong>Level: {{ word[5] }}</strong></p>
+                {# if the user is a teacher then it displays the editing form on each word instead #}
                 {% elif is_teacher %}
-                    <form action="/edit_word/" method="post">
-                        <label for="maori"><strong>Maori: </strong></label>
-                        <input type="text" name="maori" id="maori" value="{{ word[1] }}">
+                    <form class="form" action="/edit_word/" method="post">
+                        <div class="form-group">
+                            <label for="maori" class="form-label"><strong>Maori: </strong></label>
+                            <div class="form-input">
+                                <input type="text" name="maori" id="maori" value="{{ word[1] }}">
+                            </div>
 
-                        <select id="cat_id" name="category" required>
-                            {% for category in category_list %}
-                                <option value="{{ category[0] }}, {{ category[1] }}">{{ category[1] }}</option>
-                            {% endfor %}
-                        </select>
+                            {# a selection box type input that displays each category using a for loop #}
+                            <label for="cat_id" class="form-label"><strong>Category: </strong></label>
+                            <div class="form-input">
+                                <select id="cat_id" name="category" required>
+                                    {% for category in category_list %}
+                                        <option value="{{ category[0] }}, {{ category[1] }}">{{ category[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
-                        <label for="english"><strong>English:</strong></label>
-                        <input type="text" name="english" id="english" value="{{ word[2].title() }}">
+                            <label for="english" class="form-label"><strong>English:</strong></label>
+                            <div class="form-input">
+                                <input type="text" name="english" id="english" value="{{ word[2].title() }}">
+                            </div>
 
-                        <label for="definition"><strong>Definition:</strong></label>
-                        <input type="text" name="definition" id="definition" value="{{ word[4] }}">
+                            <label for="definition" class="form-label"><strong>Definition:</strong></label>
+                            <div class="form-input">
+                                <input type="text" name="definition" id="definition" value="{{ word[4] }}">
+                            </div>
 
-                        <label for="level"><strong>Level:</strong></label>
-                        <input type="number" name="level" id="level" value="{{ word[5] }}" min="1" max="10">
-
+                            <label for="level" class="form-label"><strong>Level:</strong></label>
+                            <div class="form-input">
+                                <input type="number" name="level" id="level" value="{{ word[5] }}" min="1" max="10">
+                            </div>
+                        </div>
                         <p><strong>Added By: </strong>{{ word[6] }}</p>
 
                         <input type="hidden" name="word_id" value="{{ word[0] }}">
-                        <input type="submit" value="Edit Word">
+                        <div class="buttons"><input type="submit" value="Edit Word"></div>
                     </form>
-                    <form action="/delete_word/" method="post">
-                        <input type="hidden" name="word" value="{{ word[0] }}, {{ word[1] }}">
-                        <input type="submit" value="Delete {{ word[1] }}">
+                    <form class="my-form" action="/delete_word/" method="post">
+                        <div class="form-group">
+                            <input type="hidden" name="word" value="{{ word[0] }}, {{ word[1] }}">
+                            <div class="buttons"><input type="submit" value="Delete {{ word[1] }}"></div>
+                        </div>
                     </form>
                 {% endif %}
             </div>

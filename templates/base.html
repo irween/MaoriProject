@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa&family=Suez+One&display=swap" rel="stylesheet">
     <title>{% block title %}{% endblock %}</title>
-    <meta name="Description" content="Author: D Benseman, Content: A dictionary to convert maori words to english.">
+    <meta name="Description" content="Author: I Clark, Content: A dictionary to convert maori words to english.">
 </head>
 
 <body>
@@ -16,17 +16,21 @@
     </header>
 
     <nav>
-        <input type="checkbox" name="drop_down_menu"/>
+        <label>
+            <input type="checkbox" name="drop_down_menu"/>
+        </label>
         <span></span>
         <span></span>
         <span></span>
         <ul>
             <li><a href="/">Home</a></li>
+            {# if the user isn't logged in, show them the signup and login page #}
             {% if not logged_in %}
                 <li><a href="/login">Login</a></li>
                 <li><a href="/signup">Signup</a></li>
 
             {% else %}
+                {# checking if the user is a teacher to show the admin page #}
                 {% if is_teacher %}
                     <li><a href="/admin">Admin</a></li>
                 {% endif %}
@@ -35,8 +39,10 @@
             -------------------
             <li><a href="/dictionary/all_words/1">All Words</a></li>
             -------------------
+            {# a selection box type input that displays each category using a for loop #}
             {% for category in category_list %}
-                {% if category[0] != 17 %}
+                {# if the user is not a then the junk category (id 17) will not be displayed #}
+                {% if category[0] != junk_id %}
                     <li><a href="/dictionary/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
                 {% elif is_teacher %}
                     <li><a href="/dictionary/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
