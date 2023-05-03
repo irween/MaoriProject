@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="maoridb" uuid="8c4f5a0a-b37b-4d20-be89-a47370cc454a">
+    <data-source source="LOCAL" name="maoridb [2]" uuid="d1586a53-27ca-4d43-87b8-2a57304450ce">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:C:\Users\ben\PycharmProjects\MoariProject\maoridb</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\ben\PycharmProjects\WorkingProject\maoridb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <libraries>
         <library>

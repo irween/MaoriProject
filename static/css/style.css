@@ -29,7 +29,6 @@ main {
 
 h1, h2, h3, h4 {
     padding: 1rem 0;
-    font-family: 'Suez One', serif;
     color: #000;
     text-shadow: 2px 2px 4px #fff;
 }
@@ -58,7 +57,7 @@ img {
 
 .word-box {
     /*width: 13vw;*/
-    width: 32%;
+    width: 60%;
     /*float: left;*/
     /*display: table-cell;*/
     /*padding: 0.5rem;*/
@@ -123,6 +122,14 @@ th, td {
     padding: 0.2rem;
     text-align: left;
 }
+
+.table-image{
+    width: 200px;
+    max-height: 200px;
+    overflow: clip;
+    text-align: center;
+}
+
 th {
     background-color: #000;
     color: #fff;
@@ -305,7 +312,7 @@ footer img {
     }
 
     main {
-        background-image: url('/static/images/poutama.jpg');
+        background-image: url('/static/images/poutama.png');
     }
     .formRow {
         display: grid;

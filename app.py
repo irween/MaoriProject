@@ -46,7 +46,7 @@ def get_list(query, params):
 # insert data function
 def insert_data(query, params):
     """
-    insert data into the database
+    insert and change data into the database
     @param query: query: the query to be executed
     @param params: params: the parameters of the query
     @return: returns nothing
@@ -250,6 +250,23 @@ def dictionary_page(cat_type, cat_id):
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
                            junk_id=junk_id(), message=request.args.get('message'))
+
+
+# word page
+@app.route('/word/<word_id>')
+def word_page(word_id):
+    """
+    renders the word page
+    @param word_id:
+    @return:
+    """
+    # gets the word data from the database
+    words = get_list("SELECT id, maori, english, category, definition, level, added_by "
+                         "FROM vocabulary WHERE id=?", (word_id,))[0]
+
+    return render_template("word.html", logged_in=is_logged_in(), word=words,
+                           category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
+                           junk_id=junk_id())
 
 
 # admin page
