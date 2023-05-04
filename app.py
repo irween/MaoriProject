@@ -148,6 +148,7 @@ def login_page():
         session['email'] = email
         session['user_id'] = user_id
         session['firstname'] = first_name
+        session['id'] = user_id[0]
         print(session)
         return redirect('/')
     return render_template("login.html", logged_in=is_logged_in(),
@@ -237,19 +238,19 @@ def dictionary_page(cat_type, cat_id):
 
     # gets the list of words from the specific category if the current page is for category
     if cat_type == "category":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by, category_id "
-                                   "FROM vocabulary WHERE category_id=?",
+        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+                                   "FROM vocabulary WHERE category=?",
                                    (cat_id,))
 
     # gets the list of all words if the current page is for all words
     elif cat_type == "all_words":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by, category_id "
+        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
                                    "FROM vocabulary", "")
-
+    category_name = get_list("SELECT name FROM categories WHERE id=?", (cat_id,))[0][0]
     print(dictionary_list)
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           junk_id=junk_id(), message=request.args.get('message'))
+                           junk_id=junk_id(), message=request.args.get('message'), category_name=category_name)
 
 
 # word page
@@ -261,12 +262,15 @@ def word_page(word_id):
     @return:
     """
     # gets the word data from the database
-    words = get_list("SELECT id, maori, english, category, definition, level, added_by "
+    words = get_list("SELECT id, maori, english, category, definition, level, added_by, date_time_added "
                      "FROM vocabulary WHERE id=?", (word_id,))[0]
+
+    added_by = get_list("SELECT firstname, lastname, email FROM users WHERE id=?", (words[6],))[0]
+    print(added_by)
 
     return render_template("word.html", logged_in=is_logged_in(), word=words,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           junk_id=junk_id())
+                           junk_id=junk_id(), added_by=added_by)
 
 
 # admin page
@@ -363,7 +367,7 @@ def delete_category(deletion):
         cat_id = deletion.split(",")[1]
         print(cat_id)
         # moving the words to the junk category
-        insert_data("UPDATE vocabulary SET category_id=17 WHERE category_id=?", (cat_id,))
+        insert_data("UPDATE vocabulary SET category=17 WHERE category=?", (cat_id,))
         # deleting the category
         insert_data("DELETE FROM categories WHERE id=?", (cat_id,))
 
@@ -376,7 +380,7 @@ def delete_category(deletion):
     # deleting the all the words in the junk category but keeping the category
     elif delete_type == "junk":
         cat_id = deletion.split(",")[1]
-        insert_data("DELETE FROM vocabulary WHERE category_id=?", (cat_id,))
+        insert_data("DELETE FROM vocabulary WHERE category=?", (cat_id,))
     insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM vocabulary) WHERE name = 'vocabulary'", "")
     insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM categories) WHERE name = 'categories'", "")
     return redirect('/admin')
@@ -436,7 +440,7 @@ def add_word_page():
         print("level: " + level)
 
         # getting the username and email from the session to add to the database
-        user = session['firstname'] + " " + session['email']
+        user = session['id']
         print(user)
 
         # checking if the word already exists in the database
@@ -447,9 +451,10 @@ def add_word_page():
 
         # inserting the data into the database
         try:
-            insert_data("INSERT INTO vocabulary (maori, english, category, definition, level, added_by, category_id) "
-                        "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        (maori, english, category[1], definition, level, user, category[0]))
+            insert_data("INSERT INTO vocabulary "
+                        "(maori, english, category, definition, level, added_by, date_time_added) "
+                        "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+                        (maori, english, category[0], definition, level, user))
         # if the word already exists in the database redirects to the add word page with an error
         except sqlite3.IntegrityError:
             return redirect('/add_word?error=Word+already+exists')
@@ -485,8 +490,9 @@ def edit_word_page():
         print(word_id)
 
         # updating the database with the new values
-        insert_data("UPDATE vocabulary SET maori=?, english=?, category=?, definition=?, level=?, category_id=? "
-                    "WHERE id=?", (maori_word, english_word, category[1], definition, level, category[0], word_id))
+        insert_data("UPDATE vocabulary SET "
+                    "maori=?, english=?, category=?, definition=?, level=?, date_time_added=CURRENT_TIMESTAMP "
+                    "WHERE id=?", (maori_word, english_word, category[0], definition, level, word_id))
         return redirect(request.referrer + "?=edit_word")
 
     return redirect('/admin')
