@@ -262,7 +262,7 @@ def word_page(word_id):
     """
     # gets the word data from the database
     words = get_list("SELECT id, maori, english, category, definition, level, added_by "
-                         "FROM vocabulary WHERE id=?", (word_id,))[0]
+                     "FROM vocabulary WHERE id=?", (word_id,))[0]
 
     return render_template("word.html", logged_in=is_logged_in(), word=words,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
@@ -278,7 +278,7 @@ def admin_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-            return redirect("/login?error=You+must+be+logged+in+or+admin+to+access+this+page")
+        return redirect("/login?error=You+must+be+logged+in+or+admin+to+access+this+page")
 
     return render_template("admin.html", logged_in=is_logged_in(),
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
