@@ -238,13 +238,13 @@ def dictionary_page(cat_type, cat_id):
 
     # gets the list of words from the specific category if the current page is for category
     if cat_type == "category":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+        dictionary_list = get_list("SELECT id, maori, english, image "
                                    "FROM vocabulary WHERE category=?",
                                    (cat_id,))
 
     # gets the list of all words if the current page is for all words
     elif cat_type == "all_words":
-        dictionary_list = get_list("SELECT id, maori, english, category, definition, level, added_by "
+        dictionary_list = get_list("SELECT id, maori, english, image "
                                    "FROM vocabulary", "")
     category_name = get_list("SELECT name FROM categories WHERE id=?", (cat_id,))[0][0]
     print(dictionary_list)
@@ -262,7 +262,7 @@ def word_page(word_id):
     @return:
     """
     # gets the word data from the database
-    words = get_list("SELECT id, maori, english, category, definition, level, added_by, date_time_added "
+    words = get_list("SELECT id, maori, english, category, definition, level, added_by, date_time_added, image "
                      "FROM vocabulary WHERE id=?", (word_id,))[0]
 
     added_by = get_list("SELECT firstname, lastname, email FROM users WHERE id=?", (words[6],))[0]

@@ -24,9 +24,13 @@
                 <tr>
                     <td><h3><a href="/word/{{ word[0] }}">{{ word[1].title() }}</a></h3></td>
                     <td><h3>{{ word[2] }}</h3></td>
-                    <td class="table-image"><img src="/static/images/{{ word[2] }}.png"
-                             onerror="this.onerror=null; this.src='/static/images/noimage.png'"
-                             alt="{{ word[1] }}, {{ word[2] }}"></td>
+                    <td>
+                        {% if not word[3] %}
+                            <img src="/static/images/noimage.png" alt="no image error">
+                        {% else %}
+                            <img src="/static/images/{{ word[3] }}.png" alt="{{ word[1] }}">
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

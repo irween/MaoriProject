@@ -13,9 +13,11 @@
             </div>
 
             <div class="word-box-image">
-                <img src="/static/images/{{ word[2] }}.png"
-                     onerror="this.onerror=null; this.src='/static/images/noimage.png'"
-                     alt="{{ word[1] }}, {{ word[2] }}">
+                {% if not word[8] %}
+                <img src="/static/images/noimage.png" alt="no image error">
+                {% else %}
+                <img src="/static/images/{{ word[8] }}.png" alt="{{ word[2] }}">
+                {% endif %}
             </div>
 
             <div class="word-box-info">
