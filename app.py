@@ -265,12 +265,16 @@ def word_page(word_id):
     words = get_list("SELECT id, maori, english, category, definition, level, added_by, date_time_added, image "
                      "FROM vocabulary WHERE id=?", (word_id,))[0]
 
+    category = get_list("SELECT name FROM categories WHERE id=?", (words[3],))[0][0]
+
     added_by = get_list("SELECT firstname, lastname, email FROM users WHERE id=?", (words[6],))[0]
     print(added_by)
 
+    print(words)
+
     return render_template("word.html", logged_in=is_logged_in(), word=words,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           junk_id=junk_id(), added_by=added_by)
+                           junk_id=junk_id(), added_by=added_by, category=category)
 
 
 # admin page

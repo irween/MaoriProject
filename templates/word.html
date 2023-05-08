@@ -23,11 +23,11 @@
             <div class="word-box-info">
                 {# if the user is not a teacher then it displays the page without editing privelages #}
                 {% if not is_teacher %}
-                <p><strong>Category:</strong> {{ word[3].title() }}</p>
-                <p><strong>English:</strong> {{ word[2].title() }}</p>
-                <p><strong>Definition:</strong> {{ word[4] }}</p>
-                <p><strong>Level: {{ word[5] }}</strong></p>
-                {# if the user is a teacher then it displays the editing form on each word instead #}
+                    <p><strong>Category:</strong> {{ category.title() }}</p>
+                    <p><strong>English:</strong> {{ word[2].title() }}</p>
+                    <p><strong>Definition:</strong> {{ word[4] }}</p>
+                    <p><strong>Level: {{ word[5] }}</strong></p>
+                    {# if the user is a teacher then it displays the editing form on each word instead #}
                 {% elif is_teacher %}
                     <form class="form" action="/edit_word/" method="post">
                         <div class="form-group">
