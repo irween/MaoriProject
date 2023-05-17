@@ -138,11 +138,11 @@ def login_page():
 
         # if the user does not exist, redirect to the login page with an error message
         except IndexError:
-            return redirect("/login?error=Email+invalid+or+password+incorrect")
+            return redirect("/login?message=Email+invalid+or+password+incorrect")
 
         # checks if the password is correct
         if not bcrypt.check_password_hash(db_password, password):
-            return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
+            return redirect(request.referrer + "?message=Email+invalid+or+password+incorrect")
 
         # if the password is correct, set the session variables and redirect to the home page
         session['email'] = email
@@ -186,7 +186,7 @@ def signup_page():
 
         # checks if the passwords match
         if password != password_2:
-            return redirect("/signup?error=Passwords+do+not+match")
+            return redirect("/signup?message=Passwords+do+not+match")
 
         # hashes the password using bcrypt
         hashed_password = bcrypt.generate_password_hash(password)
@@ -204,7 +204,7 @@ def signup_page():
 
         # if the email is already in use, redirect to the signup page with an error message
         except sqlite3.IntegrityError:
-            return redirect('/signup?error=Email+is+already+used')
+            return redirect('/signup?message=Email+is+already+used')
 
         return redirect('/login')
     return render_template("signup.html", logged_in=is_logged_in(),
@@ -286,7 +286,7 @@ def admin_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+or+admin+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+or+admin+to+access+this+page")
 
     return render_template("admin.html", logged_in=is_logged_in(),
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
@@ -303,7 +303,7 @@ def add_category_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+to+access+this+page")
 
     # gets the data from the form if the request method is POST
     if request.method == 'POST':
@@ -312,13 +312,19 @@ def add_category_page():
         # gets the form values
         category = request.form.get('category_name').lower().strip()
 
-        # inserts the category into the database
-        try:
-            insert_data("INSERT INTO categories (name) VALUES (?)", (category,))
+        category_list = get_list("SELECT name FROM categories", "")
+        print(category_list)
 
-        # if the category already exists, redirect to the add category page with an error message
-        except sqlite3.IntegrityError:
-            return redirect('/add_category?error=Category+already+exists')
+        # inserts the category into the database
+        for category_name in category_list:
+            print(category_name[0])
+            if category == category_name[0]:
+                # if the category already exists, redirect to the add category page with an error message
+                print("Category already exists")
+                return redirect('/admin?message=Category+already+exists')
+
+        insert_data("INSERT INTO categories (name) VALUES (?)", (category,))
+
     return redirect('/admin')
 
 
@@ -332,7 +338,7 @@ def delete_category_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+to+access+this+page")
 
     # gets the data from the form if the request method is POST
     if request.method == 'POST':
@@ -361,7 +367,7 @@ def delete_category(deletion):
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+to+access+this+page")
 
     # getting the type of deletion from the url
     delete_type = deletion.split(",")[0]
@@ -400,7 +406,7 @@ def delete_word_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+to+access+this+page")
 
     # gets the data from the form if the request method is POST
     if request.method == 'POST':
@@ -425,7 +431,7 @@ def add_word_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+to+access+this+page")
 
     # gets the data from the form if the request method is POST
     if request.method == 'POST':
@@ -451,7 +457,7 @@ def add_word_page():
         dictionary_list = get_list("SELECT maori, english FROM vocabulary", "")
         for word in dictionary_list:
             if maori == word[0] and english == word[1]:
-                return redirect('/admin?error=Word+already+exists')
+                return redirect('/admin?message=Word+already+exists')
 
         # inserting the data into the database
         try:
@@ -461,7 +467,7 @@ def add_word_page():
                         (maori, english, category[0], definition, level, user))
         # if the word already exists in the database redirects to the add word page with an error
         except sqlite3.IntegrityError:
-            return redirect('/add_word?error=Word+already+exists')
+            return redirect('/add_word?message=Word+already+exists')
     return redirect('/admin')
 
 
@@ -475,7 +481,7 @@ def edit_word_page():
     @return:
     """
     if not is_logged_in() and 1 not in is_teacher():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+to+access+this+page")
 
     # gets the data from the form if the request method is POST
     if request.method == 'POST':
@@ -512,7 +518,7 @@ gets the form values from the delete junk words button and sends them to the del
     @return:
     """
     if not is_logged_in():
-        return redirect("/login?error=You+must+be+logged+in+to+access+this+page")
+        return redirect("/login?message=You+must+be+logged+in+to+access+this+page")
 
     # gets the data from the button if the request method is POST
     if request.method == 'POST':
