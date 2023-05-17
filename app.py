@@ -58,14 +58,14 @@ def insert_data(query, params):
     con.close()
 
 
-# get junk id
-def junk_id():
+# get bin id
+def bin_id():
     """
-    gets the id of the junk category
+    gets the id of the bin category
     @return:
     """
-    id_junk = get_list("SELECT id FROM categories WHERE name='junk'", "")
-    return id_junk[0][0]
+    id_bin = get_list("SELECT id FROM categories WHERE name='bin'", "")
+    return id_bin[0][0]
 
 
 # check if user is logged in
@@ -106,7 +106,7 @@ def home_page():
     """
     return render_template("home.html", logged_in=is_logged_in(),
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           junk_id=junk_id())
+                           bin_id=bin_id())
 
 
 # login page
@@ -153,7 +153,7 @@ def login_page():
         return redirect('/')
     return render_template("login.html", logged_in=is_logged_in(),
                            category_list=get_list("SELECT id, name FROM categories", ""),
-                           junk_id=junk_id(), message=request.args.get('message'))
+                           bin_id=bin_id(), message=request.args.get('message'))
 
 
 # signup page
@@ -209,7 +209,7 @@ def signup_page():
         return redirect('/login')
     return render_template("signup.html", logged_in=is_logged_in(),
                            category_list=get_list("SELECT id, name FROM categories", ""),
-                           junk_id=junk_id(), message=request.args.get('message'))
+                           bin_id=bin_id(), message=request.args.get('message'))
 
 
 # logout page function
@@ -250,7 +250,7 @@ def dictionary_page(cat_type, cat_id):
     print(dictionary_list)
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           junk_id=junk_id(), message=request.args.get('message'), category_name=category_name)
+                           bin_id=bin_id(), message=request.args.get('message'), category_name=category_name)
 
 
 # word page
@@ -274,7 +274,7 @@ def word_page(word_id):
 
     return render_template("word.html", logged_in=is_logged_in(), word=words,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           junk_id=junk_id(), added_by=added_by, category=category)
+                           bin_id=bin_id(), added_by=added_by, category=category)
 
 
 # admin page
@@ -290,7 +290,7 @@ def admin_page():
 
     return render_template("admin.html", logged_in=is_logged_in(),
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           junk_id=junk_id(), message=request.args.get('message'))
+                           bin_id=bin_id(), message=request.args.get('message'))
 
 
 # add category page
@@ -372,11 +372,11 @@ def delete_category(deletion):
     # getting the type of deletion from the url
     delete_type = deletion.split(",")[0]
 
-    # deleting the category from the category database and moving the words to a "junk" category incase they are needed
+    # deleting the category from the category database and moving the words to a "bin" category incase they are needed
     if delete_type == "category":
         cat_id = deletion.split(",")[1]
         print(cat_id)
-        # moving the words to the junk category
+        # moving the words to the bin category
         insert_data("UPDATE vocabulary SET category=17 WHERE category=?", (cat_id,))
         # deleting the category
         insert_data("DELETE FROM categories WHERE id=?", (cat_id,))
@@ -387,8 +387,8 @@ def delete_category(deletion):
         print(word_id)
         insert_data("DELETE FROM vocabulary WHERE id=?", (word_id,))
 
-    # deleting the all the words in the junk category but keeping the category
-    elif delete_type == "junk":
+    # deleting the all the words in the bin category but keeping the category
+    elif delete_type == "bin":
         cat_id = deletion.split(",")[1]
         insert_data("DELETE FROM vocabulary WHERE category=?", (cat_id,))
     insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM vocabulary) WHERE name = 'vocabulary'", "")
@@ -508,13 +508,13 @@ def edit_word_page():
     return redirect('/admin')
 
 
-# delete junk words
-@app.route('/delete_junk_words', methods=['POST'])
-def delete_junk_words():
+# delete bin words
+@app.route('/delete_bin_words', methods=['POST'])
+def delete_bin_words():
     """
-    renders the delete junk words page
+    renders the delete bin words page
     uses is_logged_in() and is_teacher to check if the user is logged in and is a teacher
-gets the form values from the delete junk words button and sends them to the delete_confirm page
+gets the form values from the delete bin words button and sends them to the delete_confirm page
     @return:
     """
     if not is_logged_in():
@@ -522,12 +522,12 @@ gets the form values from the delete junk words button and sends them to the del
 
     # gets the data from the button if the request method is POST
     if request.method == 'POST':
-        category_name = request.form.get('junk')
-        # gets the id of the category "junk"
+        category_name = request.form.get('bin')
+        # gets the id of the category "bin"
         cat_id = get_list("SELECT id FROM categories WHERE name=?", (category_name,))[0][0]
         print(cat_id)
 
-        return render_template("delete_confirm.html", id=cat_id, cat_name=category_name, type="junk")
+        return render_template("delete_confirm.html", id=cat_id, cat_name=category_name, type="bin")
 
     return redirect('/admin')
 

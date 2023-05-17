@@ -42,9 +42,10 @@
             {# a selection box type input that displays each category using a for loop #}
             {% for category in category_list %}
                 {# if the user is not a then the junk category (id 17) will not be displayed #}
-                {% if category[0] != junk_id %}
+                {% if category[0] != bin_id %}
                     <li><a href="/dictionary/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
                 {% elif is_teacher %}
+            -------------------
                     <li><a href="/dictionary/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
                 {% endif %}
             {% endfor %}
