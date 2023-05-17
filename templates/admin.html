@@ -11,8 +11,8 @@
 <h4>Add a category</h4>
 <form class="my-form" method="post" action="/add_category">
     <div class="form-group">
-        <div class="form-label"><label for="name">Category Name: (3 to 50 characters)</label></div>
-        <div class="form-input"><input type="text" name="category_name" id="name" pattern=".{3,}" maxlength="50" required></div>
+        <div class="form-label"><label for="name">Category Name: (3 to 50 characters, only letters)</label></div>
+        <div class="form-input"><input type="text" name="category_name" id="name" pattern="[A-Za-z]{3,}" maxlength="50" required></div>
     </div>
 
     <div class="form-group">
@@ -45,13 +45,13 @@
 <h4>Add Word</h4>
 <form class="my-form" method="post" action="/add_word">
     <div class="form-group">
-        <div class="form-label"><label for="name">Maori: (3 to 50 characters)</label></div>
-        <div class="form-input"><input type="text" name="maori" id="name" pattern=".{3,}" maxlength="50" required></div>
+        <div class="form-label"><label for="name">Maori: (3 to 50 characters, only letters)</label></div>
+        <div class="form-input"><input type="text" name="maori" id="name" pattern="[A-Za-z]{3,}" maxlength="50" required></div>
     </div>
 
     <div class="form-group">
-        <div class="form-label"><label for="name">English: (3 to 50 characters)</label></div>
-        <div class="form-input"><input type="text" name="english" id="name" pattern=".{3,}" maxlength="50" required></div>
+        <div class="form-label"><label for="name">English: (3 to 50 characters, only letters)</label></div>
+        <div class="form-input"><input type="text" name="english" id="name" pattern="[A-Za-z]{3,}" maxlength="50" required></div>
     </div>
 
     <div class="form-group">
@@ -67,8 +67,8 @@
     </div>
 
     <div class="form-group">
-        <div class="form-label"><label for="name">Definition: (3 to 50 characters)</label></div>
-        <div class="form-input"><input type="text" name="definition" id="name" pattern=".{3,}" maxlength="50" required></div>
+        <div class="form-label"><label for="name">Definition: (3 to 50 characters, only letters)</label></div>
+        <div class="form-input"><input type="text" name="definition" id="name" pattern="[A-Za-z]{3,}" maxlength="50" required></div>
     </div>
 
     <div class="form-group">

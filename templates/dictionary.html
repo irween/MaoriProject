@@ -26,7 +26,8 @@
                     <td><h3>{{ word[2] }}</h3></td>
                     <td>
                         {% if not word[3] %}
-                            <img src="/static/images/noimage.png" alt="no image error">
+                            <img src="/static/images/noimage.png" alt="no image error"
+                            onerror="this.onerror=null; this.src='/static/images/noimage.png'">
                         {% else %}
                             <img src="/static/images/{{ word[3] }}.png" alt="{{ word[1] }}">
                         {% endif %}

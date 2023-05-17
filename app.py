@@ -246,6 +246,16 @@ def dictionary_page(cat_type, cat_id):
     elif cat_type == "all_words":
         dictionary_list = get_list("SELECT id, maori, english, image "
                                    "FROM vocabulary", "")
+        # remove words from dictionary list if they are in the bin
+        for word in dictionary_list:
+            print(word[0])
+            # get word id from words that are in the bin category
+            bin_word_id = get_list("SELECT id FROM vocabulary WHERE category=?", (bin_id(),))
+            for bin_word in bin_word_id:
+                print(bin_word[0])
+                if word[0] == bin_word[0]:
+                    dictionary_list.remove(word)
+
     category_name = get_list("SELECT name FROM categories WHERE id=?", (cat_id,))[0][0]
     print(dictionary_list)
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
@@ -262,8 +272,7 @@ def word_page(word_id):
     @return:
     """
     # gets the word data from the database
-    words = get_list("SELECT id, maori, english, category, definition, level, added_by, date_time_added, image "
-                     "FROM vocabulary WHERE id=?", (word_id,))[0]
+    words = get_list("SELECT * FROM vocabulary WHERE id=?", (word_id,))[0]
 
     category = get_list("SELECT name FROM categories WHERE id=?", (words[3],))[0][0]
 
@@ -274,7 +283,7 @@ def word_page(word_id):
 
     return render_template("word.html", logged_in=is_logged_in(), word=words,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           bin_id=bin_id(), added_by=added_by, category=category)
+                           bin_id=bin_id(), added_by=added_by, category=category, message=request.args.get('message'))
 
 
 # admin page
@@ -496,14 +505,19 @@ def edit_word_page():
         print(definition)
         level = request.form.get('level')
         print(level)
-        word_id = request.form.get('id')
+        word_id = request.form.get('word_id')
         print(word_id)
+        image = request.form.get('image')
+        print(image)
+
+        if ".png" not in image:
+            return redirect(request.referrer + "?message=Image+must+be+a+.png+file")
 
         # updating the database with the new values
         insert_data("UPDATE vocabulary SET "
-                    "maori=?, english=?, category=?, definition=?, level=?, date_time_added=CURRENT_TIMESTAMP "
-                    "WHERE id=?", (maori_word, english_word, category[0], definition, level, word_id))
-        return redirect(request.referrer + "?=edit_word")
+                    "maori=?, english=?, category=?, definition=?, level=?, date_time_added=CURRENT_TIMESTAMP, image=?"
+                    "WHERE id=?", (maori_word, english_word, category[0], definition, level, image, word_id))
+        return redirect(request.referrer)
 
     return redirect('/admin')
 

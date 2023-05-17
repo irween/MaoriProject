@@ -5,6 +5,9 @@
 {% block heading %}Maōri - English Dictionary - Home{% endblock %}
 
 {% block main %}
+{% if message %}
+    <h5>{{ message }}</h5>
+{% endif %}
     <div class="words">
     {# displays each word in the dictionary list #}
         <div class="word-box">
@@ -14,9 +17,11 @@
 
             <div class="word-box-image">
                 {% if not word[8] %}
-                <img src="/static/images/noimage.png" alt="no image error">
+                <img src="/static/images/noimage.png" alt="no image error"
+                     onerror="this.onerror=null; this.src='/static/images/noimage.png'">
                 {% else %}
-                <img src="/static/images/{{ word[8] }}.png" alt="{{ word[2] }}">
+                <img src="/static/images/{{ word[8] }}.png" alt="{{ word[2] }}"
+                onerror="this.onerror=null; this.src='/static/images/noimage.png'">
                 {% endif %}
             </div>
 
@@ -31,9 +36,9 @@
                 {% elif is_teacher %}
                     <form class="form" action="/edit_word/" method="post">
                         <div class="form-group">
-                            <label for="maori" class="form-label"><strong>Maori: </strong></label>
+                            <label for="maori" class="form-label"><strong>Maori: (3 to 50 characters, only letters)</strong></label>
                             <div class="form-input">
-                                <input type="text" name="maori" id="maori" value="{{ word[1] }}">
+                                <input type="text" name="maori" id="maori" value="{{ word[1] }}" pattern="[A-Za-z]{3,}" maxlength="50">
                             </div>
 
                             {# a selection box type input that displays each category using a for loop #}
@@ -46,25 +51,30 @@
                                 </select>
                             </div>
 
-                            <label for="english" class="form-label"><strong>English:</strong></label>
+                            <label for="english" class="form-label"><strong>English: (3 to 50 characters, only letters)</strong></label>
                             <div class="form-input">
-                                <input type="text" name="english" id="english" value="{{ word[2].title() }}">
+                                <input type="text" name="english" id="english" value="{{ word[2].title() }}" pattern="[A-Za-z]{3,}" maxlength="50">
                             </div>
 
-                            <label for="definition" class="form-label"><strong>Definition:</strong></label>
+                            <label for="definition" class="form-label"><strong>Definition: (3 to 50 characters, only letters)</strong></label>
                             <div class="form-input">
-                                <input type="text" name="definition" id="definition" value="{{ word[4] }}">
+                                <input type="text" name="definition" id="definition" value="{{ word[4] }}" pattern="[A-Za-z]{3,}" maxlength="100">
                             </div>
 
-                            <label for="level" class="form-label"><strong>Level:</strong></label>
+                            <label for="level" class="form-label"><strong>Level: </strong></label>
                             <div class="form-input">
                                 <input type="number" name="level" id="level" value="{{ word[5] }}" min="1" max="10">
+                            </div>
+
+                            <label for="image" class="form-label"><strong>Image: (Must be a .png, 3 to 50 characters, only letters)</strong></label>
+                            <div class="form-input">
+                                <input type="text" name="image" id="image" value="{{ word[8] }}" pattern=".{3,}" maxlength="50">
                             </div>
                         </div>
                         <p><strong>Added By: </strong>{{ added_by[0] }} {{ added_by[1] }}, {{ added_by[2] }}</p>
                         <p><strong>Date Added: </strong>{{ word[7] }}</p>
 
-                        <input type="hidden" name="word_id" value="{{ word[0] }}">
+                        <input type="hidden" name="word_id" id="word_id" value="{{ word[0] }}">
                         <div class="buttons"><input type="submit" value="Edit Word"></div>
                     </form>
                     <form class="my-form" action="/delete_word/" method="post">
