@@ -38,7 +38,7 @@
             {% endif %}
             -------------------
             <li><a href="/dictionary/all_words/1">All Words</a></li>
-            -------------------
+
             {# a selection box type input that displays each category using a for loop #}
             {% for category in category_list %}
                 {# if the user is not a then the junk category (id 17) will not be displayed #}
@@ -47,6 +47,7 @@
                 {% elif is_teacher %}
             -------------------
                     <li><a href="/dictionary/category/{{ category[0] }}">{{ category[1].title() }}</a></li>
+            -------------------
                 {% endif %}
             {% endfor %}
             -------------------
