@@ -29,7 +29,8 @@
                             <img src="/static/images/noimage.png" alt="no image error"
                             onerror="this.onerror=null; this.src='/static/images/noimage.png'">
                         {% else %}
-                            <img src="/static/images/{{ word[3] }}.png" alt="{{ word[1] }}">
+                            <img src="/static/images/{{ word[3] }}.png" alt="{{ word[1] }}"
+                            onerror="this.onerror=null; this.src='/static/images/noimage.png'">
                         {% endif %}
                     </td>
                 </tr>
