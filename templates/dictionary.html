@@ -2,7 +2,7 @@
 
 {% block title %}Maōri Dictionary | Words and Definitions{% endblock %}
 
-{% block heading %}Maōri - English Dictionary - All Words{% endblock %}
+{% block heading %}Maōri - English Dictionary - {{ category_name }}{% endblock %}
 
 {% block main %}
 <div class="words">
@@ -25,13 +25,8 @@
                     <td><h3><a href="/word/{{ word[0] }}">{{ word[1].title() }}</a></h3></td>
                     <td><h3>{{ word[2] }}</h3></td>
                     <td>
-                        {% if not word[3] %}
-                            <img src="/static/images/noimage.png" alt="no image error"
-                            onerror="this.onerror=null; this.src='/static/images/noimage.png'">
-                        {% else %}
-                            <img src="/static/images/{{ word[3] }}.png" alt="{{ word[1] }}"
-                            onerror="this.onerror=null; this.src='/static/images/noimage.png'">
-                        {% endif %}
+                        <img src="/static/images/{{ word[3] }}.png" alt="{{ word[1] }}"
+                             onerror="this.onerror=null; this.src='/static/images/noimage.png'">
                     </td>
                 </tr>
             {% endfor %}

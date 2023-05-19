@@ -12,7 +12,7 @@
 <form class="my-form" method="post" action="/add_category">
     <div class="form-group">
         <div class="form-label"><label for="name">Category Name: (3 to 50 characters, only letters)</label></div>
-        <div class="form-input"><input type="text" name="category_name" id="name" pattern="[A-Za-z]{3,}" maxlength="50" required></div>
+        <div class="form-input"><input type="text" name="category_name" id="name" pattern=".{3,}" maxlength="50" required></div>
     </div>
 
     <div class="form-group">
@@ -28,7 +28,7 @@
             {# a selection box type input that displays each category using a for loop #}
             <select id="cat_id" name="cat_id">
                 {% for category in category_list %}
-                    {% if category[0] != junk_id %}
+                    {% if category[0] != bin_id %}
                         <option value="{{ category[0] }}, {{ category[1] }}">{{ category[1] }}</option>
                     {% endif %}
                 {% endfor %}
@@ -46,7 +46,7 @@
 <form class="my-form" method="post" action="/add_word">
     <div class="form-group">
         <div class="form-label"><label for="name">Maori: (3 to 50 characters, only letters)</label></div>
-        <div class="form-input"><input type="text" name="maori" id="name" pattern="[A-Za-z]{3,}" maxlength="50" required></div>
+        <div class="form-input"><input type="text" name="maori" id="name" pattern=".{3,}" maxlength="50" required></div>
     </div>
 
     <div class="form-group">
@@ -84,11 +84,11 @@
 
 </form>
 
-<h4>Delete Junk Words</h4>
-<form method="post" action="/delete_junk_words">
+<h4>Delete Bin Words</h4>
+<form method="post" action="/delete_bin_words">
     <div class="form-group">
-        <input type="hidden" name="junk" value="junk">
-        <div class="buttons"><input type="submit" value="Delete Junk"></div>
+        <input type="hidden" name="bin" value="bin">
+        <div class="buttons"><input type="submit" value="Delete Bin"></div>
     </div>
 </form>
 {% endblock %}

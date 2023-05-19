@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, request, session
 import sqlite3
+import re
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 
@@ -97,6 +98,22 @@ def is_teacher():
     return False
 
 
+def check_input(input_string):
+    """
+    checks if the input string is valid
+    @param input_string: the string to be checked
+    @return: returns true if the string is valid, false if not
+    """
+    not_allowed = r"\d|[!@#$%^&*()_{}|<>]"
+
+    if re.search(not_allowed, input_string):
+        print("Invalid input")
+        return False
+
+    return True
+
+
+
 # home page
 @app.route('/')
 def home_page():
@@ -106,7 +123,7 @@ def home_page():
     """
     return render_template("home.html", logged_in=is_logged_in(),
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
-                           bin_id=bin_id())
+                           bin_id=bin_id(), user=session.get('firstname'))
 
 
 # login page
@@ -181,6 +198,10 @@ def signup_page():
         password_2 = request.form.get('password_2')
         teacher = request.form.get('teacher')
 
+        # checks if the input is valid
+        if not check_input(firstname) or not check_input(lastname):
+            return redirect("/signup?message=Invalid+input+characters+Please+use+only+letters")
+
         print(password)
         print(password_2)
 
@@ -235,28 +256,24 @@ def dictionary_page(cat_type, cat_id):
     @return:
     """
     dictionary_list = []
+    category_name = ""
 
     # gets the list of words from the specific category if the current page is for category
     if cat_type == "category":
         dictionary_list = get_list("SELECT id, maori, english, image "
                                    "FROM vocabulary WHERE category=?",
                                    (cat_id,))
+        category_name = get_list("SELECT name FROM categories WHERE id=?", (cat_id,))[0][0]
 
     # gets the list of all words if the current page is for all words
     elif cat_type == "all_words":
+        print(bin_id())
         dictionary_list = get_list("SELECT id, maori, english, image "
-                                   "FROM vocabulary", "")
-        # remove words from dictionary list if they are in the bin
-        for word in dictionary_list:
-            print(word[0])
-            # get word id from words that are in the bin category
-            bin_word_id = get_list("SELECT id FROM vocabulary WHERE category=?", (bin_id(),))
-            for bin_word in bin_word_id:
-                print(bin_word[0])
-                if word[0] == bin_word[0]:
-                    dictionary_list.remove(word)
+                                   "FROM vocabulary WHERE category!=?", (bin_id(),))
+        print(dictionary_list)
 
-    category_name = get_list("SELECT name FROM categories WHERE id=?", (cat_id,))[0][0]
+        category_name = "All Words"
+
     print(dictionary_list)
     return render_template("dictionary.html", logged_in=is_logged_in(), dictionary_list=dictionary_list,
                            category_list=get_list("SELECT id, name FROM categories", ""), is_teacher=is_teacher(),
@@ -320,6 +337,10 @@ def add_category_page():
 
         # gets the form values
         category = request.form.get('category_name').lower().strip()
+
+        # checks if the category name is valid
+        if not check_input(category):
+            return redirect('/admin?message=Invalid+category+name+Please+use+only+letters')
 
         category_list = get_list("SELECT name FROM categories", "")
         print(category_list)
@@ -400,6 +421,7 @@ def delete_category(deletion):
     elif delete_type == "bin":
         cat_id = deletion.split(",")[1]
         insert_data("DELETE FROM vocabulary WHERE category=?", (cat_id,))
+    # updating the sqlite sequence ID to the correct max id
     insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM vocabulary) WHERE name = 'vocabulary'", "")
     insert_data("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM categories) WHERE name = 'categories'", "")
     return redirect('/admin')
@@ -457,6 +479,10 @@ def add_word_page():
         print("definition: " + definition)
         level = request.form.get('level').lower().strip()
         print("level: " + level)
+
+        # check the inputs are valid
+        if not check_input(maori) or not check_input(english) or not definition:
+            return redirect('/admin?message=Invalid+input+Please+dont+use+numbers+or+special+characters')
 
         # getting the username and email from the session to add to the database
         user = session['id']
@@ -541,7 +567,7 @@ gets the form values from the delete bin words button and sends them to the dele
         cat_id = get_list("SELECT id FROM categories WHERE name=?", (category_name,))[0][0]
         print(cat_id)
 
-        return render_template("delete_confirm.html", id=cat_id, cat_name=category_name, type="bin")
+        return render_template("delete_confirm.html", id=cat_id, cat_name="words", type="bin")
 
     return redirect('/admin')
 
